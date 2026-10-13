@@ -16,7 +16,7 @@ function Home() {
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/australian-property-market-explorer">
       <Header />
 
       <main>

@@ -4,9 +4,9 @@ import { Link } from 'react-router-dom';
 function Header() {
   return (
     <header className="site-header">
-      <a href="/" className="logo">
+      <Link to="/" className="logo">
         MyDashboard
-      </a>
+      </Link>
 
       <nav aria-label="Main navigation">
         <ul className="nav-links">
