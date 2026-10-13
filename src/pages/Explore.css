@@ -1,3 +1,8 @@
+.explore-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px;
+}
 
 /* Suburb search area */
 .search-section {
