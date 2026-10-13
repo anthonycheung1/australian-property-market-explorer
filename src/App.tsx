@@ -1,13 +1,34 @@
-// import { useState } from 'react'
-import './App.css'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from 'react-router-dom';
+
+import Header from './components/Header';
+import Explore from './pages/Explore';
+import './App.css';
+
+function Home() {
+  return (
+    <h1>Home Page</h1>
+  )
+}
 
 function App() {
   return (
-    <main>
-      <h1>Australian Property Market Explorer</h1>
-      <p>Project foundation is ready.</p>
-    </main>
+    <BrowserRouter>
+      <Header />
+
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/explore" element={<Explore />} />
+          {/* <Route path="/compare" element={<Compare />} /> */}
+          {/* <Route path="/about" element={<About />} /> */}
+        </Routes>
+      </main>
+    </BrowserRouter>
   );
 }
 
-export default App
+export default App;
