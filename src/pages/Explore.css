@@ -1,0 +1,65 @@
+
+/* Suburb search area */
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 500px;
+  margin-top: 24px;
+}
+
+/* Search label */
+.search-section label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+/* Search input */
+.search-box {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #b8c0cc;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #ffffff;
+  color: #222222;
+}
+
+/* Visible focus indicator for keyboard users */
+.search-box:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-color: #2563eb;
+}
+
+/* Container for the metric cards */
+.metric-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 32px;
+}
+
+/* Individual metric card */
+.metric-card {
+  padding: 20px;
+  border: 1px solid #d9dee7;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+/* Metric heading */
+.metric-card h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #263449;
+}
+
+/* Stack cards on narrower screens */
+@media (max-width: 600px) {
+  .metric-cards {
+    grid-template-columns: 1fr;
+  }
+}
