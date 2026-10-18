@@ -68,3 +68,45 @@
     grid-template-columns: 1fr;
   }
 }
+
+
+/* Proof-of-concept suburb availability panel */
+.availability-note {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #e0e4eb;
+  border-radius: 6px;
+  background-color: #f7f8fa;
+}
+
+/* Panel heading */
+.availability-heading {
+  margin: 0 0 8px;
+  color: #596579;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Available suburbs */
+.availability-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 0;
+  padding-left: 18px;
+  color: #39465a;
+  font-size: 12px;
+}
+
+/* State and territory abbreviations */
+.availability-list span {
+  color: #777f8d;
+  font-size: 11px;
+}
+
+/* Use two columns on smaller screens */
+@media (max-width: 600px) {
+  .availability-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

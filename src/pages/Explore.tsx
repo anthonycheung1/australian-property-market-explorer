@@ -1,6 +1,8 @@
+
 import { useState } from 'react';
 import './Explore.css';
 
+// API response types
 interface RentalYieldData {
   area_name: string;
   area_level: string;
@@ -14,18 +16,31 @@ interface RentalYieldResponse {
 }
 
 function Explore() {
+  // Search state
   const [suburb, setSuburb] = useState('');
   const [submittedSuburb, setSubmittedSuburb] = useState('');
   const [invalidSearch, setInvalidSearch] = useState(false);
 
+  // API state
   const [yieldData, setYieldData] = useState<RentalYieldData | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
 
+  // Validate search input
   function isValidSearchBoxInput(input: string) {
     return input.trim() !== '';
   }
 
+  // Format rental yield as a percentage
+  function formatYield(value: number | null) {
+    if (value === null) {
+      return 'Data unavailable';
+    }
+
+    return `${(value * 100).toFixed(2)}%`;
+  }
+
+  // Fetch rental yield data from the API
   async function fetchRentalYield(searchSuburb: string) {
     setLoading(true);
     setApiError('');
@@ -35,9 +50,7 @@ function Explore() {
       const url =
         `https://property-yield-proxy.tonycheung75.workers.dev/?suburb=${encodeURIComponent(searchSuburb)}`;
 
-      const response = await fetch(url, {
-        method: 'GET',
-      });
+      const response = await fetch(url);
 
       if (!response.ok) {
         const errorBody = await response.text();
@@ -48,15 +61,15 @@ function Explore() {
           errorBody
         );
 
-        throw new Error(
-          `Request failed: ${response.status} ${errorBody}`
-        );
+        throw new Error(`Request failed: ${response.status}`);
       }
 
       const result: RentalYieldResponse = await response.json();
 
       if (!result.data) {
-        throw new Error('The API response did not contain rental yield data.');
+        throw new Error(
+          'The API response did not contain rental yield data.'
+        );
       }
 
       setYieldData(result.data);
@@ -71,6 +84,7 @@ function Explore() {
     }
   }
 
+  // Handle suburb search
   async function handleSearch() {
     if (!isValidSearchBoxInput(suburb)) {
       setSubmittedSuburb('');
@@ -88,19 +102,15 @@ function Explore() {
     await fetchRentalYield(searchSuburb);
   }
 
-  function formatYield(value: number | null) {
-    if (value === null || value === undefined) {
-      return 'Data unavailable';
-    }
-
-    return `${(value * 100).toFixed(2)}%`;
-  }
-
   return (
     <div className="explore-page">
-      <h1>Explore Australian Property Markets</h1>
-      <p>Explore Australian property markets by suburb.</p>
+      {/* Page introduction */}
+      <section className="page-intro">
+        <h1>Explore Australian Property Markets</h1>
+        <p>Explore Australian property markets by suburb.</p>
+      </section>
 
+      {/* Suburb search */}
       <section className="search-section">
         <label htmlFor="suburb-search-textbox">
           Suburb/Postcode
@@ -141,38 +151,66 @@ function Explore() {
         >
           {loading ? 'Loading...' : 'Submit'}
         </button>
+
+        <div className="availability-note">
+          <p className="availability-heading">
+            Demo limitation: supported suburbs
+          </p>
+
+          <ul className="availability-list">
+            <li>Bondi <span>(NSW)</span></li>
+            <li>Belmont North <span>(NSW)</span></li>
+            <li>St Kilda <span>(VIC)</span></li>
+            <li>Fortitude Valley <span>(QLD)</span></li>
+            <li>Subiaco <span>(WA)</span></li>
+            <li>Unley <span>(SA)</span></li>
+            <li>Sandy Bay <span>(TAS)</span></li>
+            <li>Kambah <span>(ACT)</span></li>
+            <li>Nightcliff <span>(NT)</span></li>
+          </ul>
+        </div>
+
       </section>
 
+      {/* Search status and errors */}
       {submittedSuburb !== '' && (
-        <p>Search results for {submittedSuburb}</p>
+        <h2 className="search-results-heading">
+          Search results for {submittedSuburb}
+        </h2>
       )}
 
-      {loading && <p>Retrieving property data...</p>}
+      {loading && (
+        <p role="status">Retrieving property data...</p>
+      )}
 
       {apiError !== '' && (
         <p role="alert">{apiError}</p>
       )}
 
+      {/* Rental yield results */}
       <section className="metric-cards">
         <div className="metric-card">
           <h2>House gross rental yield</h2>
-
-          {yieldData && (
-            <p>{formatYield(yieldData.house)}</p>
-          )}
+          <p>
+            {yieldData
+              ? formatYield(yieldData.house)
+              : '—'}
+          </p>
         </div>
 
         <div className="metric-card">
           <h2>Unit gross rental yield</h2>
-
-          {yieldData && (
-            <p>{formatYield(yieldData.unit)}</p>
-          )}
+          <p>
+            {yieldData
+              ? formatYield(yieldData.unit)
+              : '—'}
+          </p>
         </div>
       </section>
 
+      {/* Data source information */}
       {yieldData && (
-        <p>
+        <p className="data-source">
           Data for {yieldData.area_name}
           {yieldData.as_of && ` · Updated ${yieldData.as_of}`}
         </p>
