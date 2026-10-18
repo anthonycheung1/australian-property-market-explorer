@@ -1,19 +1,10 @@
 
 import { useState } from 'react';
 import './Explore.css';
-
-// API response types
-interface RentalYieldData {
-  area_name: string;
-  area_level: string;
-  as_of: string;
-  house: number | null;
-  unit: number | null;
-}
-
-interface RentalYieldResponse {
-  data: RentalYieldData;
-}
+import {
+  fetchRentalYield,
+  type RentalYieldData,
+} from '../api/propertyApi';
 
 function Explore() {
   // Search state
@@ -40,50 +31,6 @@ function Explore() {
     return `${(value * 100).toFixed(2)}%`;
   }
 
-  // Fetch rental yield data from the API
-  async function fetchRentalYield(searchSuburb: string) {
-    setLoading(true);
-    setApiError('');
-    setYieldData(null);
-
-    try {
-      const url =
-        `https://property-yield-proxy.tonycheung75.workers.dev/?suburb=${encodeURIComponent(searchSuburb)}`;
-
-      const response = await fetch(url);
-
-      if (!response.ok) {
-        const errorBody = await response.text();
-
-        console.error(
-          'Rental yield request failed:',
-          response.status,
-          errorBody
-        );
-
-        throw new Error(`Request failed: ${response.status}`);
-      }
-
-      const result: RentalYieldResponse = await response.json();
-
-      if (!result.data) {
-        throw new Error(
-          'The API response did not contain rental yield data.'
-        );
-      }
-
-      setYieldData(result.data);
-    } catch (error) {
-      console.error('Error fetching rental yield:', error);
-
-      setApiError(
-        'Unable to retrieve rental yield data. Please try again.'
-      );
-    } finally {
-      setLoading(false);
-    }
-  }
-
   // Handle suburb search
   async function handleSearch() {
     if (!isValidSearchBoxInput(suburb)) {
@@ -98,8 +45,22 @@ function Explore() {
 
     setInvalidSearch(false);
     setSubmittedSuburb(searchSuburb);
+    setLoading(true);
+    setApiError('');
+    setYieldData(null);
 
-    await fetchRentalYield(searchSuburb);
+    try {
+      const result = await fetchRentalYield(searchSuburb);
+      setYieldData(result);
+    } catch (error) {
+      console.error('Error fetching rental yield:', error);
+
+      setApiError(
+        'Unable to retrieve rental yield data. Please try again.'
+      );
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -169,7 +130,6 @@ function Explore() {
             <li>Nightcliff <span>(NT)</span></li>
           </ul>
         </div>
-
       </section>
 
       {/* Search status and errors */}
