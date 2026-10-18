@@ -33,24 +33,36 @@ function Explore() {
 
     try {
       const url =
-        `https://api.microburbs.com.au/v1/suburbs/${encodeURIComponent(searchSuburb)}/market/yield-pct`;
+        `https://property-yield-proxy.tonycheung75.workers.dev/?suburb=${encodeURIComponent(searchSuburb)}`;
 
       const response = await fetch(url, {
         method: 'GET',
-        headers: {
-          Authorization: 'Bearer test'
-        }
       });
 
       if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}`);
+        const errorBody = await response.text();
+
+        console.error(
+          'Rental yield request failed:',
+          response.status,
+          errorBody
+        );
+
+        throw new Error(
+          `Request failed: ${response.status} ${errorBody}`
+        );
       }
 
       const result: RentalYieldResponse = await response.json();
 
+      if (!result.data) {
+        throw new Error('The API response did not contain rental yield data.');
+      }
+
       setYieldData(result.data);
     } catch (error) {
       console.error('Error fetching rental yield:', error);
+
       setApiError(
         'Unable to retrieve rental yield data. Please try again.'
       );
