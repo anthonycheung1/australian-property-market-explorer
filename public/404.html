@@ -1,0 +1,32 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Loading page...</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        var base = '/australian-property-market-explorer';
+        var path = window.location.pathname;
+
+        if (path.startsWith(base + '/')) {
+          var route = path.slice(base.length);
+          var redirect =
+            base +
+            '/?/' +
+            route.replace(/^\//, '') +
+            window.location.search +
+            window.location.hash;
+
+          window.location.replace(redirect);
+        } else {
+          window.location.replace(base + '/');
+        }
+      })();
+    </script>
+    <p>Redirecting to the application...</p>
+  </body>
+</html>

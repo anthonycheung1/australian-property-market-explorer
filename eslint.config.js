@@ -28,4 +28,11 @@ export default tseslint.config(
       ],
     },
   },
+  {
+    files: ['public/redirect.js'],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
 );
