@@ -5,6 +5,7 @@ import {
   fetchRentalYield,
   type RentalYieldData,
 } from '../api/propertyApi';
+import SearchBar from '../components/SearchBar';
 
 function Explore() {
   // Search state
@@ -65,71 +66,25 @@ function Explore() {
 
   return (
     <div className="explore-page">
+      {/* Suburb search */}
+      <SearchBar
+        suburb={suburb}
+        onSuburbChange={(value) => {
+          setSuburb(value);
+
+          if (isValidSearchBoxInput(value)) {
+            setInvalidSearch(false);
+          }
+        }}
+        onSearch={handleSearch}
+        loading={loading}
+        invalidSearch={invalidSearch}
+      />
+
       {/* Page introduction */}
       <section className="page-intro">
         <h1>Explore Australian Property Markets</h1>
         <p>Explore Australian property markets by suburb.</p>
-      </section>
-
-      {/* Suburb search */}
-      <section className="search-section">
-        <label htmlFor="suburb-search-textbox">
-          Suburb/Postcode
-        </label>
-
-        <input
-          className="search-box"
-          id="suburb-search-textbox"
-          name="suburb-or-postcode"
-          type="text"
-          placeholder="e.g., Belmont North"
-          value={suburb}
-          onChange={(event) => {
-            const value = event.currentTarget.value;
-
-            setSuburb(value);
-
-            if (isValidSearchBoxInput(value)) {
-              setInvalidSearch(false);
-            }
-          }}
-          aria-invalid={invalidSearch}
-          aria-describedby={
-            invalidSearch ? 'suburb-search-error' : undefined
-          }
-        />
-
-        {invalidSearch && (
-          <p id="suburb-search-error" role="alert">
-            Please enter a suburb or postcode.
-          </p>
-        )}
-
-        <button
-          type="button"
-          onClick={handleSearch}
-          disabled={loading}
-        >
-          {loading ? 'Loading...' : 'Submit'}
-        </button>
-
-        <div className="availability-note">
-          <p className="availability-heading">
-            Demo limitation: supported suburbs
-          </p>
-
-          <ul className="availability-list">
-            <li>Bondi <span>(NSW)</span></li>
-            <li>Belmont North <span>(NSW)</span></li>
-            <li>St Kilda <span>(VIC)</span></li>
-            <li>Fortitude Valley <span>(QLD)</span></li>
-            <li>Subiaco <span>(WA)</span></li>
-            <li>Unley <span>(SA)</span></li>
-            <li>Sandy Bay <span>(TAS)</span></li>
-            <li>Kambah <span>(ACT)</span></li>
-            <li>Nightcliff <span>(NT)</span></li>
-          </ul>
-        </div>
       </section>
 
       {/* Search status and errors */}

@@ -1,0 +1,81 @@
+
+.search-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 500px;
+  margin-top: 24px;
+}
+
+.search-section label {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.search-box {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px;
+  border: 1px solid #b8c0cc;
+  border-radius: 6px;
+  font-size: 16px;
+  background-color: #ffffff;
+  color: #222222;
+}
+
+.search-box:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-color: #2563eb;
+}
+
+.search-button {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  background-color: #2563eb;
+  color: #ffffff;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.search-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.availability-note {
+  margin-top: 8px;
+  padding: 12px;
+  border: 1px solid #e0e4eb;
+  border-radius: 6px;
+  background-color: #f7f8fa;
+}
+
+.availability-heading {
+  margin: 0 0 8px;
+  color: #596579;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.availability-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 6px 12px;
+  margin: 0;
+  padding-left: 18px;
+  color: #39465a;
+  font-size: 12px;
+}
+
+.availability-list span {
+  color: #777f8d;
+  font-size: 11px;
+}
+
+@media (max-width: 600px) {
+  .availability-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
