@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import './Explore.css';
 import {
@@ -12,41 +11,35 @@ function Explore() {
   const supportedSuburbs = [
     {
       label: 'Bondi, NSW',
-      value: 'Bondi'
+      value: 'Bondi',
     },
     {
       label: 'Belmont North, NSW',
-      value: 'Belmont North'
+      value: 'Belmont North',
     },
-    /*
-    {
-      label: 'St Kilda, VIC',
-      value: 'St Kilda'
-    },
-    */
     {
       label: 'Fortitude Valley, QLD',
-      value: 'Fortitude Valley'
+      value: 'Fortitude Valley',
     },
     {
       label: 'Subiaco, WA',
-      value: 'Subiaco'
+      value: 'Subiaco',
     },
     {
       label: 'Unley, SA',
-      value: 'Unley'
+      value: 'Unley',
     },
     {
       label: 'Sandy Bay, TAS',
-      value: 'Sandy Bay'
+      value: 'Sandy Bay',
     },
     {
       label: 'Kambah, ACT',
-      value: 'Kambah'
+      value: 'Kambah',
     },
     {
       label: 'Nightcliff, NT',
-      value: 'Nightcliff'
+      value: 'Nightcliff',
     },
   ];
 
@@ -54,7 +47,7 @@ function Explore() {
   const [suburb, setSuburb] = useState('');
   const [submittedSuburb, setSubmittedSuburb] = useState('');
   const [invalidSearch, setInvalidSearch] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]); // An array of strings.
+  const [suggestions, setSuggestions] = useState<string[]>([]);
 
   // API state
   const [yieldData, setYieldData] = useState<RentalYieldData | null>(null);
@@ -88,11 +81,14 @@ function Explore() {
       return;
     }
 
-    const searchSuburb = supportedSuburbs.find(supportedSuburb => supportedSuburb.label.trim().toLowerCase() === suburb.trim().toLowerCase());
-    // Test whether .find() found a matching object (if it didn't, searchSuburb will be undefined), and
-    // check whether a matching suburb was found before starting the API request.
-    if (searchSuburb) {
+    const searchSuburb = supportedSuburbs.find(
+      (supportedSuburb) =>
+        supportedSuburb.label.trim().toLowerCase() ===
+        suburb.trim().toLowerCase()
+    );
 
+    // Check whether a matching suburb was found before starting the API request.
+    if (searchSuburb) {
       setInvalidSearch(false);
       setSubmittedSuburb(searchSuburb.label);
       setLoading(true);
@@ -111,8 +107,7 @@ function Explore() {
       } finally {
         setLoading(false);
       }
-    }
-    else {
+    } else {
       setInvalidSearch(false);
       setSubmittedSuburb('');
       setLoading(false);
@@ -121,38 +116,56 @@ function Explore() {
     }
   }
 
+  // Handle changes to the search input
+  function onSuburbChange(value: string) {
+    setSuburb(value);
+
+    // Clear existing error messages
+    setApiError('');
+
+    // Find suburbs whose labels contain the user's input
+    const suggestedSuburbs =
+      value.trim().length === 0
+        ? []
+        : supportedSuburbs.filter((supportedSuburb) => {
+            return supportedSuburb.label
+              .toLowerCase()
+              .includes(value.trim().toLowerCase());
+          });
+
+    // Store the matching suburb labels as suggestions
+    setSuggestions(
+      suggestedSuburbs.map((supportedSuburb) => {
+        return supportedSuburb.label;
+      })
+    );
+
+    if (isValidSearchBoxInput(value)) {
+      setInvalidSearch(false);
+    }
+  }
+
+  // Handle selection of a suggested suburb
+  function onSuggestionSelect(value: string) {
+    setSuburb(value);
+    setSuggestions([]);
+    setInvalidSearch(false);
+    setApiError('');
+  }
+
+  // Dismiss the suggestions when the user presses Escape
+  function onDismissSuggestions() {
+    setSuggestions([]);
+  }
+
   return (
     <div className="explore-page">
       {/* Suburb search */}
       <SearchBar
         suburb={suburb}
-        onSuburbChange={(value) => {
-          setSuburb(value);
-          // Clear existing error messages, if any
-          setApiError('');
-
-          // Calculate matching suburbs here
-          const suggestedSuburbs = value.trim().length === 0 ? [] : supportedSuburbs.filter((suburb) => {
-            // Return a condition that checks whether name contains the user's input.
-            return suburb.label.toLowerCase().includes(value.trim().toLowerCase());
-          });
-          // Set suggestions equal to each of the suburbs in suggestedSuburbs
-          setSuggestions(
-            suggestedSuburbs.map((suburb) => {
-              return suburb.label;
-            })
-          );
-
-          if (isValidSearchBoxInput(value)) {
-            setInvalidSearch(false);
-          }
-        }}
-        onSuggestionSelect={(value) => {
-          setSuburb(value);
-          setSuggestions([]);
-          setInvalidSearch(false);
-          setApiError('');
-        }}
+        onSuburbChange={onSuburbChange}
+        onSuggestionSelect={onSuggestionSelect}
+        onDismissSuggestions={onDismissSuggestions}
         onSearch={handleSearch}
         loading={loading}
         invalidSearch={invalidSearch}

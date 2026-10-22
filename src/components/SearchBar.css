@@ -1,9 +1,12 @@
 .search-section {
+  max-width: 500px;
+  margin-top: 24px;
+}
+
+.search-section form {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 500px;
-  margin-top: 24px;
 }
 
 .search-section label {
@@ -28,6 +31,47 @@
   border-color: #2563eb;
 }
 
+.suggestions-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #e0e4eb;
+  border-radius: 6px;
+  overflow: hidden;
+  background-color: #ffffff;
+}
+
+.suggestion-option {
+  width: 100%;
+  padding: 10px 12px;
+  border: none;
+  background-color: #ffffff;
+  color: #222222;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.suggestion-option + .suggestion-option {
+  border-top: 1px solid #e0e4eb;
+}
+
+.suggestion-option:hover,
+.suggestion-option.active {
+  background-color: #eff6ff;
+}
+
+.suggestion-option:focus-visible {
+  position: relative;
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+.validation-error {
+  margin: 0;
+  color: #b42318;
+  font-size: 14px;
+}
+
 .search-button {
   padding: 10px 16px;
   border: none;
@@ -36,6 +80,15 @@
   color: #ffffff;
   font-size: 16px;
   cursor: pointer;
+}
+
+.search-button:hover:not(:disabled) {
+  background-color: #1d4ed8;
+}
+
+.search-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
 }
 
 .search-button:disabled {
