@@ -8,10 +8,51 @@ import {
 import SearchBar from '../components/SearchBar';
 
 function Explore() {
+  // Suburbs that can be searched
+  const supportedSuburbs = [
+    {
+      label: 'Bondi, NSW',
+      value: 'Bondi'
+    },
+    {
+      label: 'Belmont North, NSW',
+      value: 'Belmont North'
+    },
+    {
+      label: 'St Kilda, VIC',
+      value: 'St Kilda'
+    },
+    {
+      label: 'Fortitude Valley, QLD',
+      value: 'Fortitude Valley'
+    },
+    {
+      label: 'Subiaco, WA',
+      value: 'Subiaco'
+    },
+    {
+      label: 'Unley, SA',
+      value: 'Unley'
+    },
+    {
+      label: 'Sandy Bay, TAS',
+      value: 'Sandy Bay'
+    },
+    {
+      label: 'Kambah, ACT',
+      value: 'Kambah'
+    },
+    {
+      label: 'Nightcliff, NT',
+      value: 'Nightcliff'
+    },
+  ];
+
   // Search state
   const [suburb, setSuburb] = useState('');
   const [submittedSuburb, setSubmittedSuburb] = useState('');
   const [invalidSearch, setInvalidSearch] = useState(false);
+  const [suggestions, setSuggestions] = useState<string[]>([]); // An array of strings.
 
   // API state
   const [yieldData, setYieldData] = useState<RentalYieldData | null>(null);
@@ -34,6 +75,9 @@ function Explore() {
 
   // Handle suburb search
   async function handleSearch() {
+    // Clear suggestions when the user submits a search
+    setSuggestions([]);
+
     if (!isValidSearchBoxInput(suburb)) {
       setSubmittedSuburb('');
       setInvalidSearch(true);
@@ -42,25 +86,36 @@ function Explore() {
       return;
     }
 
-    const searchSuburb = suburb.trim();
+    const searchSuburb = supportedSuburbs.find(supportedSuburb => supportedSuburb.label.trim().toLowerCase() === suburb.trim().toLowerCase());
+    // Test whether .find() found a matching object (if it didn't, searchSuburb will be undefined), and
+    // check whether a matching suburb was found before starting the API request.
+    if (searchSuburb) {
 
-    setInvalidSearch(false);
-    setSubmittedSuburb(searchSuburb);
-    setLoading(true);
-    setApiError('');
-    setYieldData(null);
+      setInvalidSearch(false);
+      setSubmittedSuburb(searchSuburb.label);
+      setLoading(true);
+      setApiError('');
+      setYieldData(null);
 
-    try {
-      const result = await fetchRentalYield(searchSuburb);
-      setYieldData(result);
-    } catch (error) {
-      console.error('Error fetching rental yield:', error);
+      try {
+        const result = await fetchRentalYield(searchSuburb.value);
+        setYieldData(result);
+      } catch (error) {
+        console.error('Error fetching rental yield:', error);
 
-      setApiError(
-        'Unable to retrieve rental yield data. Please try again.'
-      );
-    } finally {
+        setApiError(
+          'Unable to retrieve rental yield data. Please try again.'
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+    else {
+      setInvalidSearch(false);
+      setSubmittedSuburb('');
       setLoading(false);
+      setApiError('This is not a supported suburb.');
+      setYieldData(null);
     }
   }
 
@@ -71,14 +126,35 @@ function Explore() {
         suburb={suburb}
         onSuburbChange={(value) => {
           setSuburb(value);
+          // Clear existing error messages, if any
+          setApiError('');
+
+          // Calculate matching suburbs here
+          const suggestedSuburbs = value.trim().length === 0 ? [] : supportedSuburbs.filter((suburb) => {
+            // Return a condition that checks whether name contains the user's input.
+            return suburb.label.toLowerCase().includes(value.trim().toLowerCase());
+          });
+          // Set suggestions equal to each of the suburbs in suggestedSuburbs
+          setSuggestions(
+            suggestedSuburbs.map((suburb) => {
+              return suburb.label;
+            })
+          );
 
           if (isValidSearchBoxInput(value)) {
             setInvalidSearch(false);
           }
         }}
+        onSuggestionSelect={(value) => {
+          setSuburb(value);
+          setSuggestions([]);
+          setInvalidSearch(false);
+          setApiError('');
+        }}
         onSearch={handleSearch}
         loading={loading}
         invalidSearch={invalidSearch}
+        suggestedSuburbs={suggestions}
       />
 
       {/* Page introduction */}

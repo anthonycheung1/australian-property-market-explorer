@@ -2,19 +2,23 @@
 import './SearchBar.css';
 
 interface SearchBarProps {
-  suburb: string;
+  suburb: string; // This stores exactly what the user has typed into the input.
   onSuburbChange: (value: string) => void;
+  onSuggestionSelect: (value: string) => void;
   onSearch: () => void;
   loading: boolean;
   invalidSearch: boolean;
+  suggestedSuburbs: string[]; // This stores (potentially several) matches
 }
 
 function SearchBar({
   suburb,
   onSuburbChange,
+  onSuggestionSelect,
   onSearch,
   loading,
   invalidSearch,
+  suggestedSuburbs
 }: SearchBarProps) {
   return (
     <form
@@ -25,7 +29,7 @@ function SearchBar({
       }}
     >
       <label htmlFor="suburb-search-textbox">
-        Suburb/Postcode
+        Suburb
       </label>
 
       <input
@@ -44,9 +48,26 @@ function SearchBar({
         }
       />
 
+      {suggestedSuburbs.length > 0 && (
+        <ul id="suburb-suggestions">
+          {suggestedSuburbs.map((suburb) => {
+            return (
+              <li key={suburb}>
+                <button
+                  type="button"
+                  onClick={() => onSuggestionSelect(suburb)}
+                >
+                  {suburb}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
       {invalidSearch && (
         <p id="suburb-search-error" role="alert">
-          Please enter a suburb or postcode.
+          Please enter a suburb.
         </p>
       )}
 
