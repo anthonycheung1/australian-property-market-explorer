@@ -1,4 +1,3 @@
-
 .search-section {
   display: flex;
   flex-direction: column;
@@ -69,6 +68,10 @@
   font-size: 12px;
 }
 
+.availability-list li {
+  white-space: nowrap;
+}
+
 .availability-list span {
   color: #777f8d;
   font-size: 11px;
@@ -77,5 +80,11 @@
 @media (max-width: 600px) {
   .availability-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 360px) {
+  .availability-list {
+    grid-template-columns: 1fr;
   }
 }

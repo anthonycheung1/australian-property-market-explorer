@@ -87,7 +87,7 @@ function SearchBar({
         <ul className="availability-list">
           <li>Bondi <span>(NSW)</span></li>
           <li>Belmont North <span>(NSW)</span></li>
-          <li>St Kilda <span>(VIC)</span></li>
+          {/* <li>St Kilda <span>(VIC)</span></li> */}
           <li>Fortitude Valley <span>(QLD)</span></li>
           <li>Subiaco <span>(WA)</span></li>
           <li>Unley <span>(SA)</span></li>

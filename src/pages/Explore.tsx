@@ -18,10 +18,12 @@ function Explore() {
       label: 'Belmont North, NSW',
       value: 'Belmont North'
     },
+    /*
     {
       label: 'St Kilda, VIC',
       value: 'St Kilda'
     },
+    */
     {
       label: 'Fortitude Valley, QLD',
       value: 'Fortitude Valley'
