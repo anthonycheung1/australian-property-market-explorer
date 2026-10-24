@@ -5,44 +5,9 @@ import {
   type RentalYieldData,
 } from '../api/propertyApi';
 import SearchBar from '../components/SearchBar';
+import { supportedSuburbs } from '../data/suburbs.ts';
 
 function Explore() {
-  // Suburbs that can be searched
-  const supportedSuburbs = [
-    {
-      label: 'Bondi, NSW',
-      value: 'Bondi',
-    },
-    {
-      label: 'Belmont North, NSW',
-      value: 'Belmont North',
-    },
-    {
-      label: 'Fortitude Valley, QLD',
-      value: 'Fortitude Valley',
-    },
-    {
-      label: 'Subiaco, WA',
-      value: 'Subiaco',
-    },
-    {
-      label: 'Unley, SA',
-      value: 'Unley',
-    },
-    {
-      label: 'Sandy Bay, TAS',
-      value: 'Sandy Bay',
-    },
-    {
-      label: 'Kambah, ACT',
-      value: 'Kambah',
-    },
-    {
-      label: 'Nightcliff, NT',
-      value: 'Nightcliff',
-    },
-  ];
-
   // Search state
   const [suburb, setSuburb] = useState('');
   const [submittedSuburb, setSubmittedSuburb] = useState('');
