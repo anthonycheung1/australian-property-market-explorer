@@ -158,3 +158,118 @@ export async function fetchRentalYield(
 
   return rentalYield;
 }
+
+// One observation in a historical price or rent series.
+export interface MarketDataPoint {
+  date: string;
+  value: number;
+}
+
+// Current market values for houses and units.
+export interface MarketValueByPropertyType {
+  area_name?: string;
+  area_level?: string;
+  as_of?: string;
+  house?: number | null;
+  unit?: number | null;
+}
+
+// Historical observations for houses and units.
+export interface MarketHistoryByPropertyType {
+  area_name?: string;
+  area_level?: string;
+  house?: MarketDataPoint[] | null;
+  unit?: MarketDataPoint[] | null;
+}
+
+// Growth values are decimals.
+// For example, 0.0847 represents 8.47% growth.
+export interface GrowthPeriods {
+  '1yr'?: number | null;
+  '3yr'?: number | null;
+  '5yr'?: number | null;
+  '10yr'?: number | null;
+}
+
+// Price growth has nested growth periods for each property type.
+export interface PriceGrowthData {
+  area_name?: string;
+  area_level?: string;
+  house?: GrowthPeriods | null;
+  unit?: GrowthPeriods | null;
+  as_of?: string;
+}
+
+// Historical transaction counts for a property type.
+export interface TransactionHistory {
+  value?: number | null;
+  series?: MarketDataPoint[] | null;
+}
+
+// Transaction volume contains nested objects, not simple numbers.
+export interface TransactionVolumeData {
+  area_name?: string;
+  area_level?: string;
+  metric?: string;
+  house?: TransactionHistory | null;
+  unit?: TransactionHistory | null;
+}
+
+// Market data returned by the existing Cloudflare Worker.
+export interface SuburbPerformanceData {
+  median_sale_price?: MarketValueByPropertyType | null;
+  median_sale_price_series?: MarketHistoryByPropertyType | null;
+  median_rent?: MarketValueByPropertyType | null;
+  median_rent_series?: MarketHistoryByPropertyType | null;
+  price_growth?: PriceGrowthData | null;
+  yield_pct?: MarketValueByPropertyType | null;
+  days_on_market?: MarketValueByPropertyType | null;
+  transaction_volume?: TransactionVolumeData | null;
+}
+
+// The response envelope returned by the API proxy.
+interface SuburbPerformanceResponse {
+  data?: unknown;
+  suburb?: string;
+  error?: string;
+}
+
+// Fetch suburb performance data.
+export async function fetchSuburbPerformance(
+  suburb: string,
+): Promise<SuburbPerformanceData> {
+  const url = new URL(API_BASE_URL);
+
+  url.searchParams.set('suburb', suburb.trim());
+
+  const response = await fetch(url.toString(), {
+    headers: {
+      Accept: 'application/json',
+    },
+  });
+
+  let result: SuburbPerformanceResponse;
+
+  try {
+    result = (await response.json()) as SuburbPerformanceResponse;
+  } catch {
+    throw new Error(
+      'The market data service returned an invalid response.',
+    );
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      result.error ??
+        `Request failed: ${response.status}`,
+    );
+  }
+
+  if (!isRecord(result.data)) {
+    throw new Error(
+      'The API response did not contain suburb performance data.',
+    );
+  }
+
+  return result.data as SuburbPerformanceData;
+}
