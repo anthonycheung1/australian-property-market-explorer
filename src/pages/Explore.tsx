@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Explore.css';
 import {
   fetchRentalYield,
@@ -76,7 +77,7 @@ function Explore() {
       setInvalidSearch(false);
       setSubmittedSuburb('');
       setLoading(false);
-      setApiError('This is not a supported suburb.');
+      setApiError(`"${suburb.trim()}" is not a supported suburb.`);
       setYieldData(null);
     }
   }
@@ -84,6 +85,10 @@ function Explore() {
   // Handle changes to the search input
   function onSuburbChange(value: string) {
     setSuburb(value);
+    // Clear the previous search heading and prevents the old suburb's detail link from appearing,
+    // and clear the previous rental-yield results so they aren't mistaken for results for the newly edited input.
+    setSubmittedSuburb('');
+    setYieldData(null);
 
     // Clear existing error messages
     setApiError('');
@@ -93,10 +98,10 @@ function Explore() {
       value.trim().length === 0
         ? []
         : supportedSuburbs.filter((supportedSuburb) => {
-            return supportedSuburb.label
-              .toLowerCase()
-              .includes(value.trim().toLowerCase());
-          });
+          return supportedSuburb.label
+            .toLowerCase()
+            .includes(value.trim().toLowerCase());
+        });
 
     // Store the matching suburb labels as suggestions
     setSuggestions(
@@ -122,6 +127,11 @@ function Explore() {
   function onDismissSuggestions() {
     setSuggestions([]);
   }
+
+  // Find the selected suburb so its detail page can be linked.
+  const selectedSuburb = supportedSuburbs.find(
+    (supportedSuburb) => supportedSuburb.label === submittedSuburb
+  );
 
   return (
     <div className="explore-page">
@@ -178,6 +188,17 @@ function Explore() {
           </p>
         </div>
       </section>
+
+      {/* Link to the detailed suburb page */}
+      {selectedSuburb && yieldData && !loading && !apiError && (
+        <p className="suburb-details-link">
+          <Link
+            to={`/suburb/${selectedSuburb.state.toLowerCase()}/${selectedSuburb.value.toLowerCase().replaceAll(' ', '-')}`}
+          >
+            View detailed market data for {selectedSuburb.label}
+          </Link>
+        </p>
+      )}
 
       {/* Data source information */}
       {yieldData && (

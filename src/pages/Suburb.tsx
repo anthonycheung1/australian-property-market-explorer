@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supportedSuburbs } from '../data/suburbs.ts';
-import {fetchSuburbPerformance, type MarketDataPoint, type SuburbPerformanceData,} from '../api/propertyApi';
+import { fetchSuburbPerformance, type MarketDataPoint, type SuburbPerformanceData, } from '../api/propertyApi';
 import './Suburb.css';
 
 // Store the result of fetching market data.
@@ -11,14 +11,15 @@ interface SuburbResult {
   error: string;
 }
 
+type PropertyType = 'house' | 'unit' | 'all';
+
 // Format values as Australian dollars.
 function formatMoney(value: number | null | undefined,): string {
-  if (value === null || value === undefined || !Number.isFinite(value)
-  ) {
+  if (value === null || value === undefined || !Number.isFinite(value)) {
     return 'N/A';
   }
 
-  return new Intl.NumberFormat('en-AU', {style: 'currency', currency: 'AUD', maximumFractionDigits: 0,}).format(value);
+  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0, }).format(value);
 }
 
 // Format decimal growth and yield values as percentages.
@@ -42,26 +43,21 @@ function formatDate(value: string | undefined,): string {
     return value;
   }
 
-  return date.toLocaleDateString('en-AU', {day: 'numeric', month: 'short', year: 'numeric',});
+  return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', });
 }
 
 // Keep positive, plausible sale prices.
 // The minimum is based on the current median for that property type.
-function getValidPriceHistory(
-  points: MarketDataPoint[] | null | undefined,
-  currentMedian: number | null | undefined,
-): MarketDataPoint[] {
+function getValidPriceHistory(points: MarketDataPoint[] | null | undefined, currentMedian: number | null | undefined,): MarketDataPoint[] {
   if (!Array.isArray(points)) {
     return [];
   }
 
-  const minimumPlausiblePrice =
-    typeof currentMedian === 'number' && Number.isFinite(currentMedian) && currentMedian > 0 ? currentMedian * 0.1 : 0;
+  const minimumPlausiblePrice = typeof currentMedian === 'number' && Number.isFinite(currentMedian) && currentMedian > 0 ? currentMedian * 0.1 : 0;
 
   return points
     .filter((point) => {
-      return (typeof point.date === 'string' && !Number.isNaN(Date.parse(point.date)) && typeof point.value === 'number' && Number.isFinite(point.value) && point.value > minimumPlausiblePrice
-      );
+      return (typeof point.date === 'string' && !Number.isNaN(Date.parse(point.date)) && typeof point.value === 'number' && Number.isFinite(point.value) && point.value > minimumPlausiblePrice);
     })
     .sort((a, b) => a.date.localeCompare(b.date));
 }
@@ -111,6 +107,9 @@ function Suburb() {
   // Store the most recently completed request.
   const [result, setResult] = useState<SuburbResult | null>(null);
 
+  // Store the selected property type.
+  const [propertyType, setPropertyType] = useState<PropertyType>('all');
+
   // Fetch performance data whenever the selected suburb changes.
   useEffect(() => {
     if (!matchingSuburb) {
@@ -123,12 +122,12 @@ function Suburb() {
     fetchSuburbPerformance(selectedSuburb)
       .then((data) => {
         if (!cancelled) {
-          setResult({suburb: selectedSuburb, data, error: '',});
+          setResult({ suburb: selectedSuburb, data, error: '', });
         }
       })
       .catch((fetchError: unknown) => {
         if (!cancelled) {
-          setResult({suburb: selectedSuburb, data: null, error: fetchError instanceof Error ? fetchError.message : 'Unable to load suburb performance data.',});
+          setResult({ suburb: selectedSuburb, data: null, error: fetchError instanceof Error ? fetchError.message : 'Unable to load suburb performance data.', });
         }
       });
 
@@ -140,7 +139,6 @@ function Suburb() {
 
   // Only use a result that belongs to the currently selected suburb.
   const currentResult = result?.suburb === matchingSuburb?.value ? result : null;
-
   const performanceData = currentResult?.data ?? null;
   const error = currentResult?.error ?? '';
   const loading = matchingSuburb !== undefined && currentResult === null;
@@ -157,16 +155,23 @@ function Suburb() {
   const growth = performanceData?.price_growth;
   const housePriceHistory = getValidPriceHistory(performanceData?.median_sale_price_series?.house, medianPrice?.house,);
   const unitPriceHistory = getValidPriceHistory(performanceData?.median_sale_price_series?.unit, medianPrice?.unit,);
-
   const originalHouseCount = performanceData?.median_sale_price_series?.house?.length ?? 0;
   const originalUnitCount = performanceData?.median_sale_price_series?.unit?.length ?? 0;
   const excludedHouseCount = originalHouseCount - housePriceHistory.length;
   const excludedUnitCount = originalUnitCount - unitPriceHistory.length;
 
-  // Combine valid house and unit observations to set the chart scale.
+  // Determine which property types should be visible.
+  const showHouses = propertyType === 'house' || propertyType === 'all';
+  const showUnits = propertyType === 'unit' || propertyType === 'all';
+
+  // Only include selected property types when building the chart.
+  const displayedHouseHistory = showHouses ? housePriceHistory : [];
+  const displayedUnitHistory = showUnits ? unitPriceHistory : [];
+
+  // Use only displayed observations to calculate the chart scale.
   const chartPoints = [
-    ...housePriceHistory,
-    ...unitPriceHistory,
+    ...displayedHouseHistory,
+    ...displayedUnitHistory,
   ];
 
   const chartWidth = 820;
@@ -185,11 +190,18 @@ function Suburb() {
   const prices = chartPoints.map((point) => point.value);
   const minDate = timestamps.length > 0 ? Math.min(...timestamps) : 0;
   const maxDate = timestamps.length > 0 ? Math.max(...timestamps) : 1;
-  const minPrice = prices.length > 0 ? Math.min(...prices) : 0;
-  const maxPrice = prices.length > 0 ? Math.max(...prices) : 1;
+
+  const rawMinPrice = prices.length > 0 ? Math.min(...prices) : 0;
+  const rawMaxPrice = prices.length > 0 ? Math.max(...prices) : 1;
+
+  // Give the chart some vertical space if every observation has the same price.
+  const pricePadding = rawMinPrice === rawMaxPrice ? Math.max(rawMaxPrice * 0.1, 1_000) : 0;
+
+  const minPrice = Math.max(0, rawMinPrice - pricePadding);
+  const maxPrice = rawMaxPrice + pricePadding;
 
   const housePath = buildPath(
-    housePriceHistory,
+    displayedHouseHistory,
     minDate,
     maxDate,
     minPrice,
@@ -199,7 +211,7 @@ function Suburb() {
   );
 
   const unitPath = buildPath(
-    unitPriceHistory,
+    displayedUnitHistory,
     minDate,
     maxDate,
     minPrice,
@@ -208,7 +220,18 @@ function Suburb() {
     plotHeight,
   );
 
-  const hasChartData = housePriceHistory.length > 0 || unitPriceHistory.length > 0;
+  const hasChartData = chartPoints.length > 0;
+
+  // Report excluded observations only for the selected property types.
+  const excludedObservations: string[] = [];
+
+  if (showHouses && excludedHouseCount > 0) {
+    excludedObservations.push(`houses: ${excludedHouseCount}`);
+  }
+
+  if (showUnits && excludedUnitCount > 0) {
+    excludedObservations.push(`units: ${excludedUnitCount}`);
+  }
 
   const growthPeriods = [
     { label: '1 year', key: '1yr' as const },
@@ -216,6 +239,9 @@ function Suburb() {
     { label: '5 years', key: '5yr' as const },
     { label: '10 years', key: '10yr' as const },
   ];
+
+  const chartDescription =
+    propertyType === 'all' ? 'Historical median sale prices for houses and units' : `Historical median sale prices for ${propertyType === 'house' ? 'houses' : 'units'}`;
 
   return (
     <div className="suburb-page">
@@ -234,6 +260,43 @@ function Suburb() {
           </p>
         )}
       </header>
+
+      <fieldset className="property-type-selector">
+        <legend>Property type</legend>
+
+        <label>
+          <input
+            type="radio"
+            name="propertyType"
+            value="house"
+            checked={propertyType === 'house'}
+            onChange={() => setPropertyType('house')}
+          />
+          House
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="propertyType"
+            value="unit"
+            checked={propertyType === 'unit'}
+            onChange={() => setPropertyType('unit')}
+          />
+          Unit
+        </label>
+
+        <label>
+          <input
+            type="radio"
+            name="propertyType"
+            value="all"
+            checked={propertyType === 'all'}
+            onChange={() => setPropertyType('all')}
+          />
+          All
+        </label>
+      </fieldset>
 
       {loading && (
         <p className="status-message" role="status">
@@ -262,77 +325,89 @@ function Suburb() {
             <h2>Market overview</h2>
 
             <p className="section-description">
-              A snapshot of prices, rents and market conditions for houses and units.
+              A snapshot of prices, rents and market conditions for the selected property type.
             </p>
 
             <div className="metric-grid">
-              <article className="metric-card">
-                <h3>Median house price</h3>
-                <p className="metric-value">
-                  {formatMoney(medianPrice?.house)}
-                </p>
-                <p className="metric-detail">Houses</p>
-              </article>
+              {showHouses && (
+                <article className="metric-card">
+                  <h3>Median house price</h3>
+                  <p className="metric-value">
+                    {formatMoney(medianPrice?.house)}
+                  </p>
+                  <p className="metric-detail">Houses</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>Median unit price</h3>
-                <p className="metric-value">
-                  {formatMoney(medianPrice?.unit)}
-                </p>
-                <p className="metric-detail">Units</p>
-              </article>
+              {showUnits && (
+                <article className="metric-card">
+                  <h3>Median unit price</h3>
+                  <p className="metric-value">
+                    {formatMoney(medianPrice?.unit)}
+                  </p>
+                  <p className="metric-detail">Units</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>Weekly house rent</h3>
-                <p className="metric-value">
-                  {formatMoney(medianRent?.house)}
-                </p>
-                <p className="metric-detail">Per week</p>
-              </article>
+              {showHouses && (
+                <article className="metric-card">
+                  <h3>Weekly house rent</h3>
+                  <p className="metric-value">
+                    {formatMoney(medianRent?.house)}
+                  </p>
+                  <p className="metric-detail">Per week</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>Weekly unit rent</h3>
-                <p className="metric-value">
-                  {formatMoney(medianRent?.unit)}
-                </p>
-                <p className="metric-detail">Per week</p>
-              </article>
+              {showUnits && (
+                <article className="metric-card">
+                  <h3>Weekly unit rent</h3>
+                  <p className="metric-value">
+                    {formatMoney(medianRent?.unit)}
+                  </p>
+                  <p className="metric-detail">Per week</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>House rental yield</h3>
-                <p className="metric-value">
-                  {formatPercent(yields?.house)}
-                </p>
-                <p className="metric-detail">Gross yield</p>
-              </article>
+              {showHouses && (
+                <article className="metric-card">
+                  <h3>House rental yield</h3>
+                  <p className="metric-value">
+                    {formatPercent(yields?.house)}
+                  </p>
+                  <p className="metric-detail">Gross yield</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>Unit rental yield</h3>
-                <p className="metric-value">
-                  {formatPercent(yields?.unit)}
-                </p>
-                <p className="metric-detail">Gross yield</p>
-              </article>
+              {showUnits && (
+                <article className="metric-card">
+                  <h3>Unit rental yield</h3>
+                  <p className="metric-value">
+                    {formatPercent(yields?.unit)}
+                  </p>
+                  <p className="metric-detail">Gross yield</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>House days on market</h3>
-                <p className="metric-value">
-                  {daysOnMarket?.house == null
-                    ? 'N/A'
-                    : `${daysOnMarket.house} days`}
-                </p>
-                <p className="metric-detail">Houses</p>
-              </article>
+              {showHouses && (
+                <article className="metric-card">
+                  <h3>House days on market</h3>
+                  <p className="metric-value">
+                    {daysOnMarket?.house == null ? 'N/A' : `${daysOnMarket.house} days`}
+                  </p>
+                  <p className="metric-detail">Houses</p>
+                </article>
+              )}
 
-              <article className="metric-card">
-                <h3>Unit days on market</h3>
-                <p className="metric-value">
-                  {daysOnMarket?.unit == null
-                    ? 'N/A'
-                    : `${daysOnMarket.unit} days`}
-                </p>
-                <p className="metric-detail">Units</p>
-              </article>
+              {showUnits && (
+                <article className="metric-card">
+                  <h3>Unit days on market</h3>
+                  <p className="metric-value">
+                    {daysOnMarket?.unit == null ? 'N/A' : `${daysOnMarket.unit} days`}
+                  </p>
+                  <p className="metric-detail">Units</p>
+                </article>
+              )}
             </div>
           </section>
 
@@ -348,8 +423,12 @@ function Suburb() {
                 <thead>
                   <tr>
                     <th scope="col">Period</th>
-                    <th scope="col">Houses</th>
-                    <th scope="col">Units</th>
+                    {showHouses && (
+                      <th scope="col">Houses</th>
+                    )}
+                    {showUnits && (
+                      <th scope="col">Units</th>
+                    )}
                   </tr>
                 </thead>
 
@@ -358,17 +437,13 @@ function Suburb() {
                     <tr key={period.key}>
                       <th scope="row">{period.label}</th>
 
-                      <td>
-                        {formatPercent(
-                          growth?.house?.[period.key],
-                        )}
-                      </td>
+                      {showHouses && (
+                        <td>{formatPercent(growth?.house?.[period.key],)}</td>
+                      )}
 
-                      <td>
-                        {formatPercent(
-                          growth?.unit?.[period.key],
-                        )}
-                      </td>
+                      {showUnits && (
+                        <td>{formatPercent(growth?.unit?.[period.key],)}</td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -380,21 +455,25 @@ function Suburb() {
             <h2>Historical sale prices</h2>
 
             <p className="section-description">
-              Median sale-price observations over time. Compare the long-term direction of house and unit prices.
+              Median sale-price observations over time for the selected property type.
             </p>
 
             {hasChartData ? (
               <div className="chart-card">
                 <div className="chart-legend">
-                  <span>
-                    <span className="legend-dot house-dot" />
-                    Houses
-                  </span>
+                  {showHouses && (
+                    <span>
+                      <span className="legend-dot house-dot" aria-hidden="true" />
+                      Houses
+                    </span>
+                  )}
 
-                  <span>
-                    <span className="legend-dot unit-dot" />
-                    Units
-                  </span>
+                  {showUnits && (
+                    <span>
+                      <span className="legend-dot unit-dot" aria-hidden="true" />
+                      Units
+                    </span>
+                  )}
                 </div>
 
                 <div className="chart-scroll">
@@ -402,17 +481,12 @@ function Suburb() {
                     className="price-chart"
                     viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                     role="img"
-                    aria-label="Historical median sale prices for houses and units"
+                    aria-label={chartDescription}
                   >
                     {[0, 1, 2, 3, 4].map((step) => {
                       const fraction = step / 4;
-
-                      const y =
-                        topPadding + fraction * plotHeight;
-
-                      const price =
-                        maxPrice -
-                        fraction * (maxPrice - minPrice);
+                      const y = topPadding + fraction * plotHeight;
+                      const price = maxPrice - fraction * (maxPrice - minPrice);
 
                       return (
                         <g key={step}>
@@ -437,17 +511,9 @@ function Suburb() {
                     })}
 
                     {[0, 0.5, 1].map((fraction) => {
-                      const timestamp =
-                        minDate +
-                        fraction * (maxDate - minDate);
-
-                      const year =
-                        timestamps.length > 0
-                          ? new Date(timestamp).getFullYear()
-                          : '—';
-
-                      const x =
-                        leftPadding + fraction * plotWidth;
+                      const timestamp = minDate + fraction * (maxDate - minDate);
+                      const year = timestamps.length > 0 ? new Date(timestamp).getFullYear() : '—';
+                      const x = leftPadding + fraction * plotWidth;
 
                       return (
                         <text
@@ -465,29 +531,34 @@ function Suburb() {
                     <g
                       transform={`translate(${leftPadding}, ${topPadding})`}
                     >
-                      <path
-                        d={housePath}
-                        className="house-price-line"
-                      />
+                      {showHouses && (
+                        <path
+                          d={housePath}
+                          className="house-price-line"
+                        />
+                      )}
 
-                      <path
-                        d={unitPath}
-                        className="unit-price-line"
-                      />
+                      {showUnits && (
+                        <path
+                          d={unitPath}
+                          className="unit-price-line"
+                        />
+                      )}
                     </g>
                   </svg>
                 </div>
 
-                {(excludedHouseCount > 0 ||
-                  excludedUnitCount > 0) && (
-                    <p className="data-quality-note">
-                      Data quality note: excluded{' '} {excludedHouseCount} house and{' '} {excludedUnitCount} unit observations that were less than 10% of the latest median sale price. This is a preliminary filter, not confirmation that the remaining data is accurate.
-                    </p>
-                  )}
+                {excludedObservations.length > 0 && (
+                  <p className="data-quality-note">
+                    Data quality note: excluded {excludedObservations.join('; ')} historical observations because their dates or values were invalid, or their values were at or below 10% of the latest median sale price where available. This is a preliminary filter, not confirmation that the remaining data is accurate.
+                  </p>
+                )}
               </div>
             ) : (
               <p className="empty-message">
-                Historical sale-price data is not available for this suburb.
+                Historical sale-price data is not available for{' '}
+                {propertyType === 'all' ? 'houses or units' : propertyType === 'house' ? 'houses' : 'units'}{' '}
+                in this suburb.
               </p>
             )}
           </section>
