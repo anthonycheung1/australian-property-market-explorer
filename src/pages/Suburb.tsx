@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supportedSuburbs } from '../data/suburbs.ts';
 import { fetchSuburbPerformance, type MarketDataPoint, type SuburbPerformanceData, } from '../api/propertyApi';
+import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
+import StatCard from '../components/StatCard';
 import './Suburb.css';
 
 // Store the result of fetching market data.
@@ -12,39 +14,6 @@ interface SuburbResult {
 }
 
 type PropertyType = 'house' | 'unit' | 'all';
-
-// Format values as Australian dollars.
-function formatMoney(value: number | null | undefined,): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
-    return 'N/A';
-  }
-
-  return new Intl.NumberFormat('en-AU', { style: 'currency', currency: 'AUD', maximumFractionDigits: 0, }).format(value);
-}
-
-// Format decimal growth and yield values as percentages.
-function formatPercent(value: number | null | undefined,): string {
-  if (value === null || value === undefined || !Number.isFinite(value)) {
-    return 'N/A';
-  }
-
-  return `${(value * 100).toFixed(2)}%`;
-}
-
-// Format a date for display.
-function formatDate(value: string | undefined,): string {
-  if (!value) {
-    return 'Date unavailable';
-  }
-
-  const date = new Date(`${value}T00:00:00`);
-
-  if (Number.isNaN(date.getTime())) {
-    return value;
-  }
-
-  return date.toLocaleDateString('en-AU', { day: 'numeric', month: 'short', year: 'numeric', });
-}
 
 // Keep positive, plausible sale prices.
 // The minimum is based on the current median for that property type.
@@ -330,83 +299,67 @@ function Suburb() {
 
             <div className="metric-grid">
               {showHouses && (
-                <article className="metric-card">
-                  <h3>Median house price</h3>
-                  <p className="metric-value">
-                    {formatMoney(medianPrice?.house)}
-                  </p>
-                  <p className="metric-detail">Houses</p>
-                </article>
+                <StatCard
+                  title="Median house price"
+                  value={formatMoney(medianPrice?.house)}
+                  subtitle="Houses"
+                />
               )}
 
               {showUnits && (
-                <article className="metric-card">
-                  <h3>Median unit price</h3>
-                  <p className="metric-value">
-                    {formatMoney(medianPrice?.unit)}
-                  </p>
-                  <p className="metric-detail">Units</p>
-                </article>
+                <StatCard
+                  title="Median unit price"
+                  value={formatMoney(medianPrice?.unit)}
+                  subtitle="Units"
+                />
               )}
 
               {showHouses && (
-                <article className="metric-card">
-                  <h3>Weekly house rent</h3>
-                  <p className="metric-value">
-                    {formatMoney(medianRent?.house)}
-                  </p>
-                  <p className="metric-detail">Per week</p>
-                </article>
+                <StatCard
+                  title="Weekly house rent"
+                  value={formatMoney(medianRent?.house)}
+                  subtitle="Per week"
+                />
               )}
 
               {showUnits && (
-                <article className="metric-card">
-                  <h3>Weekly unit rent</h3>
-                  <p className="metric-value">
-                    {formatMoney(medianRent?.unit)}
-                  </p>
-                  <p className="metric-detail">Per week</p>
-                </article>
+                <StatCard
+                  title="Weekly unit rent"
+                  value={formatMoney(medianRent?.unit)}
+                  subtitle="Per week"
+                />
               )}
 
               {showHouses && (
-                <article className="metric-card">
-                  <h3>House rental yield</h3>
-                  <p className="metric-value">
-                    {formatPercent(yields?.house)}
-                  </p>
-                  <p className="metric-detail">Gross yield</p>
-                </article>
+                <StatCard
+                  title="House rental yield"
+                  value={formatPercent(yields?.house)}
+                  subtitle="Gross yield"
+                />
               )}
 
               {showUnits && (
-                <article className="metric-card">
-                  <h3>Unit rental yield</h3>
-                  <p className="metric-value">
-                    {formatPercent(yields?.unit)}
-                  </p>
-                  <p className="metric-detail">Gross yield</p>
-                </article>
+                <StatCard
+                  title="Unit rental yield"
+                  value={formatPercent(yields?.unit)}
+                  subtitle="Gross yield"
+                />
               )}
 
               {showHouses && (
-                <article className="metric-card">
-                  <h3>House days on market</h3>
-                  <p className="metric-value">
-                    {daysOnMarket?.house == null ? 'N/A' : `${daysOnMarket.house} days`}
-                  </p>
-                  <p className="metric-detail">Houses</p>
-                </article>
+                <StatCard
+                  title="House days on market"
+                  value={daysOnMarket?.house == null ? 'N/A' : `${daysOnMarket.house} days`}
+                  subtitle="Houses"
+                />
               )}
 
               {showUnits && (
-                <article className="metric-card">
-                  <h3>Unit days on market</h3>
-                  <p className="metric-value">
-                    {daysOnMarket?.unit == null ? 'N/A' : `${daysOnMarket.unit} days`}
-                  </p>
-                  <p className="metric-detail">Units</p>
-                </article>
+                <StatCard
+                  title="Unit days on market"
+                  value={daysOnMarket?.unit == null ? 'N/A' : `${daysOnMarket.unit} days`}
+                  subtitle="Units"
+                />
               )}
             </div>
           </section>
