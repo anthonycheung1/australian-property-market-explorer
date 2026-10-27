@@ -14,8 +14,7 @@ interface RentalYieldResponse {
 
 type UnknownRecord = Record<string, unknown>;
 
-const API_BASE_URL =
-  'https://property-yield-proxy.tonycheung75.workers.dev';
+const API_BASE_URL = 'https://property-yield-proxy.tonycheung75.workers.dev';
 
 // Check whether a value is an object.
 function isRecord(value: unknown): value is UnknownRecord {
@@ -131,20 +130,9 @@ export async function fetchRentalYield(
   const unit = firstNumber(yieldData.unit);
 
   // Read the metadata from the rental yield object.
-  const areaName =
-    typeof yieldData.area_name === 'string'
-      ? yieldData.area_name
-      : result.suburb ?? suburb.trim();
-
-  const areaLevel =
-    typeof yieldData.area_level === 'string'
-      ? yieldData.area_level
-      : '';
-
-  const asOf =
-    typeof yieldData.as_of === 'string'
-      ? yieldData.as_of
-      : '';
+  const areaName = typeof yieldData.area_name === 'string' ? yieldData.area_name : result.suburb ?? suburb.trim();
+  const areaLevel = typeof yieldData.area_level === 'string' ? yieldData.area_level : '';
+  const asOf = typeof yieldData.as_of === 'string' ? yieldData.as_of : '';
 
   const rentalYield: RentalYieldData = {
     area_name: areaName,
@@ -235,9 +223,7 @@ interface SuburbPerformanceResponse {
 }
 
 // Fetch suburb performance data.
-export async function fetchSuburbPerformance(
-  suburb: string,
-): Promise<SuburbPerformanceData> {
+export async function fetchSuburbPerformance(suburb: string,): Promise<SuburbPerformanceData> {
   const url = new URL(API_BASE_URL);
 
   url.searchParams.set('suburb', suburb.trim());
@@ -253,22 +239,15 @@ export async function fetchSuburbPerformance(
   try {
     result = (await response.json()) as SuburbPerformanceResponse;
   } catch {
-    throw new Error(
-      'The market data service returned an invalid response.',
-    );
+    throw new Error('The market data service returned an invalid response.',);
   }
 
   if (!response.ok) {
-    throw new Error(
-      result.error ??
-        `Request failed: ${response.status}`,
-    );
+    throw new Error(result.error ?? `Request failed: ${response.status}`,);
   }
 
   if (!isRecord(result.data)) {
-    throw new Error(
-      'The API response did not contain suburb performance data.',
-    );
+    throw new Error('The API response did not contain suburb performance data.',);
   }
 
   return result.data as SuburbPerformanceData;

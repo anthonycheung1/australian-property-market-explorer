@@ -67,6 +67,16 @@ function formatAxisPrice(value: number): string {
   return `$${Math.round(value / 1_000)}k`;
 }
 
+function formatSalesCount(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value) || value < 0) {
+    return 'N/A';
+  }
+
+  return value.toLocaleString('en-AU', {
+    maximumFractionDigits: 1,
+  });
+}
+
 function Suburb() {
   const { state, suburb } = useParams();
 
@@ -122,6 +132,9 @@ function Suburb() {
   const yields = performanceData?.yield_pct;
   const daysOnMarket = performanceData?.days_on_market;
   const growth = performanceData?.price_growth;
+  const transactionVolume = performanceData?.transaction_volume;
+  const houseSales = transactionVolume?.house?.value;
+  const unitSales = transactionVolume?.unit?.value;
   const housePriceHistory = getValidPriceHistory(performanceData?.median_sale_price_series?.house, medianPrice?.house,);
   const unitPriceHistory = getValidPriceHistory(performanceData?.median_sale_price_series?.unit, medianPrice?.unit,);
   const originalHouseCount = performanceData?.median_sale_price_series?.house?.length ?? 0;
@@ -359,6 +372,22 @@ function Suburb() {
                   title="Unit days on market"
                   value={daysOnMarket?.unit == null ? 'N/A' : `${daysOnMarket.unit} days`}
                   subtitle="Units"
+                />
+              )}
+
+              {showHouses && (
+                <StatCard
+                  title="House sales (last 30 days)"
+                  value={formatSalesCount(houseSales)}
+                  subtitle="Recent transactions"
+                />
+              )}
+
+              {showUnits && (
+                <StatCard
+                  title="Unit sales (last 30 days)"
+                  value={formatSalesCount(unitSales)}
+                  subtitle="Recent transactions"
                 />
               )}
             </div>
