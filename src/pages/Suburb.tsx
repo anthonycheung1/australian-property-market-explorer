@@ -16,6 +16,22 @@ interface SuburbResult {
 }
 
 type PropertyType = 'house' | 'unit' | 'all';
+type HistoricalMetric = 'salePrice' | 'rentalPrice';
+
+const historicalMetrics = [
+  {
+    value: 'salePrice',
+    label: 'Sale prices',
+    heading: 'Historical sale prices',
+    description: 'Median sale-price observations over time for the selected property type.',
+  },
+  {
+    value: 'rentalPrice',
+    label: 'Rental prices',
+    heading: 'Historical rental prices',
+    description: 'Historical rental-price observations over time for the selected property type.',
+  },
+] as const;
 
 // Keep positive, plausible sale prices.
 // The minimum is based on the current median for that property type.
@@ -114,6 +130,8 @@ function Suburb() {
 
   // Store the selected property type.
   const [propertyType, setPropertyType] = useState<PropertyType>('all');
+
+  const [historicalMetric, setHistoricalMetric] = useState<HistoricalMetric>('salePrice');
 
   // Fetch performance data whenever the selected suburb changes.
   useEffect(() => {
@@ -279,6 +297,27 @@ function Suburb() {
 
       {!loading && !error && performanceData && (
         <>
+          <div className="historical-metric-selector">
+            <label htmlFor="historicalMetric">
+              Historical metric
+            </label>
+
+            <select
+              id="historicalMetric"
+              value={historicalMetric}
+              onChange={(event) => setHistoricalMetric(event.target.value as HistoricalMetric)}
+            >
+              {historicalMetrics.map((metric) => (
+                <option
+                  key={metric.value}
+                  value={metric.value}
+                >
+                  {metric.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
           <section className="suburb-section">
             <h2>Market overview</h2>
 
@@ -410,40 +449,38 @@ function Suburb() {
           </section>
 
           <section className="suburb-section">
-            <h2>Historical sale prices</h2>
+            <h2>
+              {historicalMetrics.find((metric) => metric.value === historicalMetric)?.heading}
+            </h2>
 
             <p className="section-description">
-              Median sale-price observations over time for the selected property type.
+              {historicalMetrics.find((metric) => metric.value === historicalMetric)?.description}
             </p>
 
             <div className="chart-card">
-              <PriceChart
-                data={priceChartData}
-                showHouses={showHouses}
-                showUnits={showUnits}
-              />
+              {historicalMetric === 'salePrice' && (
+                <>
+                  <PriceChart
+                    data={priceChartData}
+                    showHouses={showHouses}
+                    showUnits={showUnits}
+                  />
 
-              {excludedObservations.length > 0 && (
-                <p className="data-quality-note">
-                  Data quality note: excluded {excludedObservations.join('; ')} historical observations because their dates or values were invalid, or their values were at or below 10% of the latest median sale price where available. This is a preliminary filter, not confirmation that the remaining data is accurate.
-                </p>
+                  {excludedObservations.length > 0 && (
+                    <p className="data-quality-note">
+                      Data quality note: excluded {excludedObservations.join('; ')} historical observations because their dates or values were invalid, or their values were at or below 10% of the latest median sale price where available. This is a preliminary filter, not confirmation that the remaining data is accurate.
+                    </p>
+                  )}
+                </>
               )}
-            </div>
-          </section>
 
-          <section className="suburb-section">
-            <h2>Historical rental prices</h2>
-
-            <p className="section-description">
-              Historical rental-price observations over time for the selected property type.
-            </p>
-
-            <div className="chart-card">
-              <RentChart
-                data={rentChartData}
-                showHouses={showHouses}
-                showUnits={showUnits}
-              />
+              {historicalMetric === 'rentalPrice' && (
+                <RentChart
+                  data={rentChartData}
+                  showHouses={showHouses}
+                  showUnits={showUnits}
+                />
+              )}
             </div>
           </section>
 
