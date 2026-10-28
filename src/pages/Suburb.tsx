@@ -5,6 +5,7 @@ import { fetchSuburbPerformance, type MarketDataPoint, type SuburbPerformanceDat
 import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
 import StatCard from '../components/StatCard';
 import PriceChart, { type PriceChartPoint, } from '../components/PriceChart';
+import RentChart, { type RentChartPoint, } from '../components/RentChart';
 import './Suburb.css';
 
 // Store the result of fetching market data.
@@ -42,18 +43,11 @@ function formatSalesCount(value: number | null | undefined): string {
   });
 }
 
-function buildPriceChartData(
-  houseHistory: MarketDataPoint[],
-  unitHistory: MarketDataPoint[],
-): PriceChartPoint[] {
+function buildPriceChartData(houseHistory: MarketDataPoint[], unitHistory: MarketDataPoint[],): PriceChartPoint[] {
   const pointsByDate = new Map<string, PriceChartPoint>();
 
   for (const point of houseHistory) {
-    if (
-      point.date &&
-      Number.isFinite(point.value) &&
-      point.value > 0
-    ) {
+    if (point.date && Number.isFinite(point.value) && point.value > 0) {
       const existing = pointsByDate.get(point.date);
 
       pointsByDate.set(point.date, {
@@ -80,6 +74,32 @@ function buildPriceChartData(
     (a, b) =>
       new Date(a.date).getTime() -
       new Date(b.date).getTime(),
+  );
+}
+
+function buildRentChartData(houseHistory: MarketDataPoint[], unitHistory: MarketDataPoint[],): RentChartPoint[] {
+  const pointsByDate = new Map<string, RentChartPoint>();
+
+  houseHistory.forEach((point) => {
+    const existing = pointsByDate.get(point.date) ?? {
+      date: point.date,
+    };
+
+    existing.houseRent = point.value;
+    pointsByDate.set(point.date, existing);
+  });
+
+  unitHistory.forEach((point) => {
+    const existing = pointsByDate.get(point.date) ?? {
+      date: point.date,
+    };
+
+    existing.unitRent = point.value;
+    pointsByDate.set(point.date, existing);
+  });
+
+  return Array.from(pointsByDate.values()).sort(
+    (a, b) => a.date.localeCompare(b.date),
   );
 }
 
@@ -158,6 +178,10 @@ function Suburb() {
 
   // Prepare the historical observations for Recharts.
   const priceChartData = buildPriceChartData(displayedHouseHistory, displayedUnitHistory,);
+  const rentHistory = performanceData?.median_rent_series;
+  const houseRentHistory = rentHistory?.house ?? [];
+  const unitRentHistory = rentHistory?.unit ?? [];
+  const rentChartData = buildRentChartData(houseRentHistory, unitRentHistory,);
 
   // Report excluded observations only for the selected property types.
   const excludedObservations: string[] = [];
@@ -404,6 +428,22 @@ function Suburb() {
                   Data quality note: excluded {excludedObservations.join('; ')} historical observations because their dates or values were invalid, or their values were at or below 10% of the latest median sale price where available. This is a preliminary filter, not confirmation that the remaining data is accurate.
                 </p>
               )}
+            </div>
+          </section>
+
+          <section className="suburb-section">
+            <h2>Historical rental prices</h2>
+
+            <p className="section-description">
+              Historical rental-price observations over time for the selected property type.
+            </p>
+
+            <div className="chart-card">
+              <RentChart
+                data={rentChartData}
+                showHouses={showHouses}
+                showUnits={showUnits}
+              />
             </div>
           </section>
 
