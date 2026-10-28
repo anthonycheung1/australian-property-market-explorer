@@ -4,6 +4,7 @@ import { supportedSuburbs } from '../data/suburbs.ts';
 import { fetchSuburbPerformance, type MarketDataPoint, type SuburbPerformanceData, } from '../api/propertyApi';
 import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
 import StatCard from '../components/StatCard';
+import PriceChart, { type PriceChartPoint, } from '../components/PriceChart';
 import './Suburb.css';
 
 // Store the result of fetching market data.
@@ -31,42 +32,6 @@ function getValidPriceHistory(points: MarketDataPoint[] | null | undefined, curr
     .sort((a, b) => a.date.localeCompare(b.date));
 }
 
-// Convert historical observations into an SVG path.
-// The returned coordinates are relative to the chart's plot area.
-function buildPath(
-  points: MarketDataPoint[],
-  minDate: number,
-  maxDate: number,
-  minPrice: number,
-  maxPrice: number,
-  width: number,
-  height: number,
-): string {
-  if (points.length === 0) {
-    return '';
-  }
-
-  const dateRange = maxDate - minDate || 1;
-  const priceRange = maxPrice - minPrice || 1;
-
-  return points
-    .map((point, index) => {
-      const x = ((new Date(point.date).getTime() - minDate) / dateRange) * width;
-      const y = height - ((point.value - minPrice) / priceRange) * height;
-
-      return `${index === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
-    }).join(' ');
-}
-
-// Format chart-axis prices in a compact form.
-function formatAxisPrice(value: number): string {
-  if (value >= 1_000_000) {
-    return `$${(value / 1_000_000).toFixed(1)}m`;
-  }
-
-  return `$${Math.round(value / 1_000)}k`;
-}
-
 function formatSalesCount(value: number | null | undefined): string {
   if (value == null || !Number.isFinite(value) || value < 0) {
     return 'N/A';
@@ -75,6 +40,47 @@ function formatSalesCount(value: number | null | undefined): string {
   return value.toLocaleString('en-AU', {
     maximumFractionDigits: 1,
   });
+}
+
+function buildPriceChartData(
+  houseHistory: MarketDataPoint[],
+  unitHistory: MarketDataPoint[],
+): PriceChartPoint[] {
+  const pointsByDate = new Map<string, PriceChartPoint>();
+
+  for (const point of houseHistory) {
+    if (
+      point.date &&
+      Number.isFinite(point.value) &&
+      point.value > 0
+    ) {
+      const existing = pointsByDate.get(point.date);
+
+      pointsByDate.set(point.date, {
+        ...existing,
+        date: point.date,
+        housePrice: point.value,
+      });
+    }
+  }
+
+  for (const point of unitHistory) {
+    if (point.date && Number.isFinite(point.value) && point.value > 0) {
+      const existing = pointsByDate.get(point.date);
+
+      pointsByDate.set(point.date, {
+        ...existing,
+        date: point.date,
+        unitPrice: point.value,
+      });
+    }
+  }
+
+  return Array.from(pointsByDate.values()).sort(
+    (a, b) =>
+      new Date(a.date).getTime() -
+      new Date(b.date).getTime(),
+  );
 }
 
 function Suburb() {
@@ -150,59 +156,8 @@ function Suburb() {
   const displayedHouseHistory = showHouses ? housePriceHistory : [];
   const displayedUnitHistory = showUnits ? unitPriceHistory : [];
 
-  // Use only displayed observations to calculate the chart scale.
-  const chartPoints = [
-    ...displayedHouseHistory,
-    ...displayedUnitHistory,
-  ];
-
-  const chartWidth = 820;
-  const chartHeight = 300;
-  const leftPadding = 72;
-  const rightPadding = 24;
-  const topPadding = 20;
-  const bottomPadding = 42;
-  const plotWidth = chartWidth - leftPadding - rightPadding;
-  const plotHeight = chartHeight - topPadding - bottomPadding;
-
-  const timestamps = chartPoints.map((point) =>
-    new Date(point.date).getTime(),
-  );
-
-  const prices = chartPoints.map((point) => point.value);
-  const minDate = timestamps.length > 0 ? Math.min(...timestamps) : 0;
-  const maxDate = timestamps.length > 0 ? Math.max(...timestamps) : 1;
-
-  const rawMinPrice = prices.length > 0 ? Math.min(...prices) : 0;
-  const rawMaxPrice = prices.length > 0 ? Math.max(...prices) : 1;
-
-  // Give the chart some vertical space if every observation has the same price.
-  const pricePadding = rawMinPrice === rawMaxPrice ? Math.max(rawMaxPrice * 0.1, 1_000) : 0;
-
-  const minPrice = Math.max(0, rawMinPrice - pricePadding);
-  const maxPrice = rawMaxPrice + pricePadding;
-
-  const housePath = buildPath(
-    displayedHouseHistory,
-    minDate,
-    maxDate,
-    minPrice,
-    maxPrice,
-    plotWidth,
-    plotHeight,
-  );
-
-  const unitPath = buildPath(
-    displayedUnitHistory,
-    minDate,
-    maxDate,
-    minPrice,
-    maxPrice,
-    plotWidth,
-    plotHeight,
-  );
-
-  const hasChartData = chartPoints.length > 0;
+  // Prepare the historical observations for Recharts.
+  const priceChartData = buildPriceChartData(displayedHouseHistory, displayedUnitHistory,);
 
   // Report excluded observations only for the selected property types.
   const excludedObservations: string[] = [];
@@ -221,9 +176,6 @@ function Suburb() {
     { label: '5 years', key: '5yr' as const },
     { label: '10 years', key: '10yr' as const },
   ];
-
-  const chartDescription =
-    propertyType === 'all' ? 'Historical median sale prices for houses and units' : `Historical median sale prices for ${propertyType === 'house' ? 'houses' : 'units'}`;
 
   return (
     <div className="suburb-page">
@@ -440,109 +392,19 @@ function Suburb() {
               Median sale-price observations over time for the selected property type.
             </p>
 
-            {hasChartData ? (
-              <div className="chart-card">
-                <div className="chart-legend">
-                  {showHouses && (
-                    <span>
-                      <span className="legend-dot house-dot" aria-hidden="true" />
-                      Houses
-                    </span>
-                  )}
+            <div className="chart-card">
+              <PriceChart
+                data={priceChartData}
+                showHouses={showHouses}
+                showUnits={showUnits}
+              />
 
-                  {showUnits && (
-                    <span>
-                      <span className="legend-dot unit-dot" aria-hidden="true" />
-                      Units
-                    </span>
-                  )}
-                </div>
-
-                <div className="chart-scroll">
-                  <svg
-                    className="price-chart"
-                    viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-                    role="img"
-                    aria-label={chartDescription}
-                  >
-                    {[0, 1, 2, 3, 4].map((step) => {
-                      const fraction = step / 4;
-                      const y = topPadding + fraction * plotHeight;
-                      const price = maxPrice - fraction * (maxPrice - minPrice);
-
-                      return (
-                        <g key={step}>
-                          <line
-                            x1={leftPadding}
-                            y1={y}
-                            x2={chartWidth - rightPadding}
-                            y2={y}
-                            className="chart-grid-line"
-                          />
-
-                          <text
-                            x={leftPadding - 10}
-                            y={y + 4}
-                            textAnchor="end"
-                            className="chart-axis-label"
-                          >
-                            {formatAxisPrice(price)}
-                          </text>
-                        </g>
-                      );
-                    })}
-
-                    {[0, 0.5, 1].map((fraction) => {
-                      const timestamp = minDate + fraction * (maxDate - minDate);
-                      const year = timestamps.length > 0 ? new Date(timestamp).getFullYear() : '—';
-                      const x = leftPadding + fraction * plotWidth;
-
-                      return (
-                        <text
-                          key={fraction}
-                          x={x}
-                          y={chartHeight - 12}
-                          textAnchor="middle"
-                          className="chart-axis-label"
-                        >
-                          {year}
-                        </text>
-                      );
-                    })}
-
-                    <g
-                      transform={`translate(${leftPadding}, ${topPadding})`}
-                    >
-                      {showHouses && (
-                        <path
-                          d={housePath}
-                          className="house-price-line"
-                        />
-                      )}
-
-                      {showUnits && (
-                        <path
-                          d={unitPath}
-                          className="unit-price-line"
-                        />
-                      )}
-                    </g>
-                  </svg>
-                </div>
-
-                {excludedObservations.length > 0 && (
-                  <p className="data-quality-note">
-                    Data quality note: excluded {excludedObservations.join('; ')} historical observations because their dates or values were invalid, or their values were at or below 10% of the latest median sale price where available. This is a preliminary filter, not confirmation that the remaining data is accurate.
-                  </p>
-                )}
-              </div>
-            ) : (
-              <p className="empty-message">
-                Historical sale-price data is not available for{' '}
-                {propertyType === 'all' ? 'houses or units' : propertyType === 'house' ? 'houses' : 'units'}{' '}
-                in this suburb.
-              </p>
-            )}
+              {excludedObservations.length > 0 && (
+                <p className="data-quality-note">
+                  Data quality note: excluded {excludedObservations.join('; ')} historical observations because their dates or values were invalid, or their values were at or below 10% of the latest median sale price where available. This is a preliminary filter, not confirmation that the remaining data is accurate.
+                </p>
+              )}
+            </div>
           </section>
 
           <p className="disclaimer">
