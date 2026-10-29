@@ -1,12 +1,9 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-} from 'react-router-dom';
+import { BrowserRouter, Routes, Route, } from 'react-router-dom';
 
 import Header from './components/Header';
 import Explore from './pages/Explore';
 import Suburb from './pages/Suburb';
+import Compare from './pages/Compare';
 import './App.css';
 
 function Home() {
@@ -25,7 +22,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/suburb/:state/:suburb" element={<Suburb />} />
-          {/* <Route path="/compare" element={<Compare />} /> */}
+          <Route path="/compare" element={<Compare />} />
           {/* <Route path="/about" element={<About />} /> */}
         </Routes>
       </main>

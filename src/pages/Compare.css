@@ -1,0 +1,144 @@
+.compare-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 32px 24px;
+}
+
+.compare-heading {
+  margin-bottom: 32px;
+}
+
+.compare-eyebrow {
+  margin-bottom: 8px;
+  color: #2563eb;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.compare-heading h1 {
+  margin: 0 0 12px;
+  font-size: 32px;
+}
+
+.compare-heading > p:last-child {
+  margin: 0;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.compare-section {
+  margin-bottom: 32px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background-color: #ffffff;
+}
+
+.compare-section h2 {
+  margin: 0 0 12px;
+  font-size: 22px;
+}
+
+.compare-description {
+  margin: 0 0 20px;
+  color: #64748b;
+  line-height: 1.6;
+}
+
+.compare-error {
+  margin: 12px 0 0;
+  color: #b91c1c;
+  font-size: 14px;
+}
+
+.compare-count {
+  margin: 16px 0 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.compare-empty {
+  margin: 0;
+  padding: 24px;
+  border: 1px dashed #cbd5e1;
+  border-radius: 8px;
+  color: #64748b;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.selected-suburbs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.selected-suburb-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+  min-width: 0;
+  padding: 20px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #f8fafc;
+}
+
+.selected-suburb-details h3 {
+  margin: 0 0 8px;
+  overflow-wrap: anywhere;
+  font-size: 18px;
+}
+
+.selected-suburb-details p {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.remove-suburb-button {
+  align-self: flex-start;
+  padding: 8px 14px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  background-color: #ffffff;
+  color: #b91c1c;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.remove-suburb-button:hover {
+  background-color: #fef2f2;
+}
+
+.remove-suburb-button:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.compare-limit-message {
+  margin: 20px 0 0;
+  color: #64748b;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .compare-page {
+    padding: 24px 16px;
+  }
+
+  .compare-heading h1 {
+    font-size: 28px;
+  }
+
+  .compare-section {
+    padding: 20px;
+  }
+
+  .selected-suburbs {
+    grid-template-columns: 1fr;
+  }
+}

@@ -17,6 +17,9 @@ function Header() {
             <Link to="/explore">Explore</Link>
           </li>
           <li>
+            <Link to="/compare">Compare</Link>
+          </li>
+          <li>
             <Link to="/about">About</Link>
           </li>
         </ul>
