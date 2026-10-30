@@ -1,9 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supportedSuburbs } from '../data/suburbs.ts';
+import { fetchSuburbPerformance, type SuburbPerformanceData } from '../api/propertyApi';
+import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
 import SearchBar from '../components/SearchBar';
+import StatCard from '../components/StatCard';
 import './Compare.css';
 
 type SupportedSuburb = typeof supportedSuburbs[number];
+
+interface SuburbComparisonResult {
+  suburb: SupportedSuburb;
+  data: SuburbPerformanceData | null;
+  error: string;
+}
 
 function Compare() {
   // Store the suburb currently entered into the search field.
@@ -12,21 +21,24 @@ function Compare() {
   // Store the suburbs selected for comparison.
   const [selectedSuburbs, setSelectedSuburbs] = useState<SupportedSuburb[]>([]);
 
-  // Store the current search validation state.
+  // Store the market data returned for each selected suburb.
+  const [comparisonResults, setComparisonResults] = useState<SuburbComparisonResult[]>([]);
+
+  // Store the loading and error states.
+  const [loading, setLoading] = useState(false);
+  const [comparisonError, setComparisonError] = useState('');
   const [invalidSearch, setInvalidSearch] = useState(false);
   const [searchError, setSearchError] = useState('');
+
+  // Allow the user to retry failed requests.
+  const [retryCount, setRetryCount] = useState(0);
 
   // Control whether suburb suggestions should be displayed.
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
 
   // Find supported suburbs that match the search input.
   const suggestedSuburbs = suburb.trim() && !suggestionsDismissed
-    ? supportedSuburbs
-      .filter((supportedSuburb) =>
-        supportedSuburb.label.toLowerCase().includes(suburb.trim().toLowerCase())
-        || supportedSuburb.value.toLowerCase().includes(suburb.trim().toLowerCase()),
-      )
-      .map((supportedSuburb) => supportedSuburb.label)
+    ? supportedSuburbs.filter((supportedSuburb) => supportedSuburb.label.toLowerCase().includes(suburb.trim().toLowerCase()) || supportedSuburb.value.toLowerCase().includes(suburb.trim().toLowerCase()),).map((supportedSuburb) => supportedSuburb.label)
     : [];
 
   // Update the search input and allow suggestions to appear again.
@@ -35,6 +47,11 @@ function Compare() {
     setInvalidSearch(false);
     setSearchError('');
     setSuggestionsDismissed(false);
+  }
+
+  // Dismiss suburb suggestions.
+  function handleDismissSuggestions() {
+    setSuggestionsDismissed(true);
   }
 
   // Select a suburb from the search suggestions.
@@ -108,6 +125,88 @@ function Compare() {
     );
   }
 
+  // Fetch market data for all selected suburbs concurrently.
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchComparisonData() {
+      if (selectedSuburbs.length === 0) {
+        setComparisonResults([]);
+        setComparisonError('');
+        setLoading(false);
+        return;
+      }
+
+      setLoading(true);
+      setComparisonError('');
+      setComparisonResults([]);
+
+      // Start all requests without waiting for each one individually.
+      const results = await Promise.allSettled(
+        selectedSuburbs.map((selectedSuburb) =>
+          fetchSuburbPerformance(selectedSuburb.value),
+        ),
+      );
+
+      if (cancelled) {
+        return;
+      }
+
+      // Keep each result associated with its selected suburb.
+      const newComparisonResults: SuburbComparisonResult[] = results.map(
+        (result, index) => {
+          if (result.status === 'fulfilled') {
+            return {
+              suburb: selectedSuburbs[index],
+              data: result.value,
+              error: '',
+            };
+          }
+
+          return {
+            suburb: selectedSuburbs[index],
+            data: null,
+            error: result.reason instanceof Error
+              ? result.reason.message
+              : 'Unable to load market data for this suburb.',
+          };
+        },
+      );
+
+      setComparisonResults(newComparisonResults);
+
+      // Show an overall error if every request failed.
+      if (newComparisonResults.every((result) => result.data === null)) {
+        setComparisonError(
+          'Unable to load market data for any of the selected suburbs. Please try again.',
+        );
+      }
+
+      setLoading(false);
+    }
+
+    fetchComparisonData().catch((fetchError: unknown) => {
+      if (!cancelled) {
+        setComparisonError(
+          fetchError instanceof Error
+            ? fetchError.message
+            : 'An unexpected error occurred while loading comparison data.',
+        );
+        setLoading(false);
+      }
+    });
+
+    // Prevent outdated requests from updating the page.
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedSuburbs, retryCount]);
+
+  // Retry fetching market data for the currently selected suburbs.
+  function handleRetry() {
+    setRetryCount((currentCount) => currentCount + 1);
+  }
+
   return (
     <div className="compare-page">
       <header className="compare-heading">
@@ -118,7 +217,7 @@ function Compare() {
         <h1>Compare suburbs</h1>
 
         <p>
-          Select up to three Australian suburbs to compare their property markets.
+          Compare property prices, rents and rental yields across up to three Australian suburbs.
         </p>
       </header>
 
@@ -133,7 +232,7 @@ function Compare() {
           suburb={suburb}
           onSuburbChange={handleSuburbChange}
           onSuggestionSelect={handleSuggestionSelect}
-          onDismissSuggestions={() => setSuggestionsDismissed(true)}
+          onDismissSuggestions={handleDismissSuggestions}
           onSearch={handleSearch}
           loading={false}
           invalidSearch={invalidSearch}
@@ -192,6 +291,116 @@ function Compare() {
           </p>
         )}
       </section>
+
+      {selectedSuburbs.length > 0 && (
+        <section className="compare-section">
+          <h2>Market comparison</h2>
+
+          <p className="compare-description">
+            Compare the latest available market statistics for your selected suburbs.
+          </p>
+
+          {loading && (
+            <p className="compare-loading" role="status">
+              Loading market data for {selectedSuburbs.length} {selectedSuburbs.length === 1 ? 'suburb' : 'suburbs'}…
+            </p>
+          )}
+
+          {!loading && comparisonError && (
+            <div className="compare-error-panel" role="alert">
+              <p>{comparisonError}</p>
+
+              <button
+                type="button"
+                className="retry-button"
+                onClick={handleRetry}
+              >
+                Try again
+              </button>
+            </div>
+          )}
+
+          {!loading && comparisonResults.length > 0 && (
+            <div className="comparison-results">
+              {comparisonResults.map((result) => (
+                <article
+                  className="comparison-result-card"
+                  key={`${result.suburb.state}-${result.suburb.value}`}
+                >
+                  <h3>{result.suburb.label}</h3>
+
+                  <p className="comparison-state">
+                    {result.suburb.state} · Australia
+                  </p>
+
+                  {result.error && (
+                    <div className="comparison-result-error" role="alert">
+                      <p>Unable to load this suburb's market data.</p>
+
+                      <p>{result.error}</p>
+                    </div>
+                  )}
+
+                  {result.data && (
+                    <>
+                      <p className="comparison-data-date">
+                        Data as of{' '}
+                        {formatDate(
+                          result.data.median_sale_price?.as_of
+                          ?? result.data.median_rent?.as_of
+                          ?? result.data.yield_pct?.as_of,
+                        )}
+                      </p>
+
+                      <div className="comparison-metrics">
+                        <StatCard
+                          title="Median house price"
+                          value={formatMoney(result.data.median_sale_price?.house)}
+                          subtitle="Houses"
+                        />
+
+                        <StatCard
+                          title="Median unit price"
+                          value={formatMoney(result.data.median_sale_price?.unit)}
+                          subtitle="Units"
+                        />
+
+                        <StatCard
+                          title="Weekly house rent"
+                          value={formatMoney(result.data.median_rent?.house)}
+                          subtitle="Per week"
+                        />
+
+                        <StatCard
+                          title="Weekly unit rent"
+                          value={formatMoney(result.data.median_rent?.unit)}
+                          subtitle="Per week"
+                        />
+
+                        <StatCard
+                          title="House rental yield"
+                          value={formatPercent(result.data.yield_pct?.house)}
+                          subtitle="Gross yield"
+                        />
+
+                        <StatCard
+                          title="Unit rental yield"
+                          value={formatPercent(result.data.yield_pct?.unit)}
+                          subtitle="Gross yield"
+                        />
+                      </div>
+                    </>
+                  )}
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
+
+      <p className="compare-disclaimer">
+        Figures are supplied by the market data provider. Median values and rental yields are indicative market statistics, not valuations or investment advice.
+      </p>
     </div>
   );
 }
