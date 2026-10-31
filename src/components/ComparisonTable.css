@@ -1,0 +1,72 @@
+
+.comparison-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background-color: #ffffff;
+}
+
+.comparison-table {
+  width: 100%;
+  min-width: 650px;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.comparison-table caption {
+  padding: 16px;
+  color: #475569;
+  font-size: 14px;
+  text-align: left;
+}
+
+.comparison-table th,
+.comparison-table td {
+  padding: 16px;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.comparison-table thead th {
+  background-color: #f1f5f9;
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.comparison-table tbody th {
+  color: #334155;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.comparison-table tbody td {
+  color: #475569;
+  font-size: 14px;
+}
+
+.comparison-table tbody tr:last-child th,
+.comparison-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.comparison-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.table-suburb-state {
+  display: block;
+  margin-top: 4px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.table-error-label {
+  display: block;
+  margin-top: 6px;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 400;
+}

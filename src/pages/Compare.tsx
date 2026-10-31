@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { supportedSuburbs } from '../data/suburbs.ts';
 import { fetchSuburbPerformance, type SuburbPerformanceData } from '../api/propertyApi';
-import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
+// import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
 import SearchBar from '../components/SearchBar';
-import StatCard from '../components/StatCard';
+// import StatCard from '../components/StatCard';
+import ComparisonTable from '../components/ComparisonTable';
 import './Compare.css';
 
 type SupportedSuburb = typeof supportedSuburbs[number];
@@ -321,79 +322,7 @@ function Compare() {
           )}
 
           {!loading && comparisonResults.length > 0 && (
-            <div className="comparison-results">
-              {comparisonResults.map((result) => (
-                <article
-                  className="comparison-result-card"
-                  key={`${result.suburb.state}-${result.suburb.value}`}
-                >
-                  <h3>{result.suburb.label}</h3>
-
-                  <p className="comparison-state">
-                    {result.suburb.state} · Australia
-                  </p>
-
-                  {result.error && (
-                    <div className="comparison-result-error" role="alert">
-                      <p>Unable to load this suburb's market data.</p>
-
-                      <p>{result.error}</p>
-                    </div>
-                  )}
-
-                  {result.data && (
-                    <>
-                      <p className="comparison-data-date">
-                        Data as of{' '}
-                        {formatDate(
-                          result.data.median_sale_price?.as_of
-                          ?? result.data.median_rent?.as_of
-                          ?? result.data.yield_pct?.as_of,
-                        )}
-                      </p>
-
-                      <div className="comparison-metrics">
-                        <StatCard
-                          title="Median house price"
-                          value={formatMoney(result.data.median_sale_price?.house)}
-                          subtitle="Houses"
-                        />
-
-                        <StatCard
-                          title="Median unit price"
-                          value={formatMoney(result.data.median_sale_price?.unit)}
-                          subtitle="Units"
-                        />
-
-                        <StatCard
-                          title="Weekly house rent"
-                          value={formatMoney(result.data.median_rent?.house)}
-                          subtitle="Per week"
-                        />
-
-                        <StatCard
-                          title="Weekly unit rent"
-                          value={formatMoney(result.data.median_rent?.unit)}
-                          subtitle="Per week"
-                        />
-
-                        <StatCard
-                          title="House rental yield"
-                          value={formatPercent(result.data.yield_pct?.house)}
-                          subtitle="Gross yield"
-                        />
-
-                        <StatCard
-                          title="Unit rental yield"
-                          value={formatPercent(result.data.yield_pct?.unit)}
-                          subtitle="Gross yield"
-                        />
-                      </div>
-                    </>
-                  )}
-                </article>
-              ))}
-            </div>
+            <ComparisonTable results={comparisonResults} />
           )}
         </section>
       )}
