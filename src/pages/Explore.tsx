@@ -7,6 +7,7 @@ import {
 } from '../api/propertyApi';
 import SearchBar from '../components/SearchBar';
 import { supportedSuburbs } from '../data/suburbs.ts';
+import { StatCardSkeleton } from '../components/Skeleton';
 
 function Explore() {
   // Search state
@@ -169,24 +170,33 @@ function Explore() {
       )}
 
       {/* Rental yield results */}
-      <section className="metric-cards">
-        <div className="metric-card">
-          <h2>House gross rental yield</h2>
-          <p>
-            {yieldData
-              ? formatYield(yieldData.house)
-              : '—'}
-          </p>
-        </div>
+      <section
+        className="metric-cards"
+        aria-label="Rental yield results"
+        aria-busy={loading}
+      >
+        {loading ? (
+          <>
+            <StatCardSkeleton />
+            <StatCardSkeleton />
+          </>
+        ) : (
+          <>
+            <div className="metric-card">
+              <h2>House gross rental yield</h2>
+              <p>
+                {yieldData? formatYield(yieldData.house): '—'}
+              </p>
+            </div>
 
-        <div className="metric-card">
-          <h2>Unit gross rental yield</h2>
-          <p>
-            {yieldData
-              ? formatYield(yieldData.unit)
-              : '—'}
-          </p>
-        </div>
+            <div className="metric-card">
+              <h2>Unit gross rental yield</h2>
+              <p>
+                {yieldData? formatYield(yieldData.unit) : '—'}
+              </p>
+            </div>
+          </>
+        )}
       </section>
 
       {/* Link to the detailed suburb page */}

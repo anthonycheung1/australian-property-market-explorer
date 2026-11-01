@@ -110,3 +110,12 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
+
+/* Loading state for rental yield results */
+.metric-cards[aria-busy="true"] {
+  align-items: stretch;
+}
+
+.metric-cards[aria-busy="true"] .metric-card {
+  min-height: 130px;
+}

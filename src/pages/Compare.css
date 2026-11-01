@@ -240,3 +240,22 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Loading state for market comparison */
+
+.comparison-loading {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+.comparison-loading .comparison-chart-section,
+.comparison-loading .comparison-table-section {
+  min-width: 0;
+}
+
+.compare-loading {
+  color: #64748b;
+  font-size: 14px;
+}

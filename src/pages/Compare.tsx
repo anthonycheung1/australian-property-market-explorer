@@ -6,6 +6,7 @@ import SearchBar from '../components/SearchBar';
 // import StatCard from '../components/StatCard';
 import ComparisonTable from '../components/ComparisonTable';
 import './Compare.css';
+import { ChartSkeleton, TableSkeleton, } from '../components/Skeleton';
 
 type SupportedSuburb = typeof supportedSuburbs[number];
 
@@ -293,8 +294,12 @@ function Compare() {
         )}
       </section>
 
+
       {selectedSuburbs.length > 0 && (
-        <section className="compare-section">
+        <section
+          className="compare-section"
+          aria-busy={loading}
+        >
           <h2>Market comparison</h2>
 
           <p className="compare-description">
@@ -302,9 +307,21 @@ function Compare() {
           </p>
 
           {loading && (
-            <p className="compare-loading" role="status">
-              Loading market data for {selectedSuburbs.length} {selectedSuburbs.length === 1 ? 'suburb' : 'suburbs'}…
-            </p>
+            <div className="comparison-loading">
+              <p className="compare-loading" role="status">
+                Loading market data for {selectedSuburbs.length} {selectedSuburbs.length === 1 ? 'suburb' : 'suburbs'}…
+              </p>
+
+              <section className="comparison-chart-section">
+                <h3>Compare market metrics</h3>
+                <ChartSkeleton />
+              </section>
+
+              <section className="comparison-table-section">
+                <h3>Market data comparison</h3>
+                <TableSkeleton />
+              </section>
+            </div>
           )}
 
           {!loading && comparisonError && (
