@@ -69,7 +69,6 @@
   }
 }
 
-
 /* Proof-of-concept suburb availability panel */
 .availability-note {
   margin-top: 8px;
@@ -118,4 +117,33 @@
 
 .metric-cards[aria-busy="true"] .metric-card {
   min-height: 130px;
+}
+
+/* Error and empty states */
+.explore-error-panel,
+.explore-empty-state {
+  padding: 16px;
+  margin: 20px 0;
+  border-radius: 8px;
+}
+
+.explore-error-panel {
+  border: 1px solid #dc2626;
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.explore-empty-state {
+  border: 1px solid #d1d5db;
+  background-color: #f9fafb;
+  color: #4b5563;
+}
+
+.explore-error-panel p,
+.explore-empty-state {
+  line-height: 1.6;
+}
+
+.explore-error-panel .retry-button {
+  margin-top: 8px;
 }

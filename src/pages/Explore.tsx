@@ -1,10 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import './Explore.css';
-import {
-  fetchRentalYield,
-  type RentalYieldData,
-} from '../api/propertyApi';
+import { fetchRentalYield, type RentalYieldData, } from '../api/propertyApi';
 import SearchBar from '../components/SearchBar';
 import { supportedSuburbs } from '../data/suburbs.ts';
 import { StatCardSkeleton } from '../components/Skeleton';
@@ -48,11 +45,7 @@ function Explore() {
       return;
     }
 
-    const searchSuburb = supportedSuburbs.find(
-      (supportedSuburb) =>
-        supportedSuburb.label.trim().toLowerCase() ===
-        suburb.trim().toLowerCase()
-    );
+    const searchSuburb = supportedSuburbs.find((supportedSuburb) => supportedSuburb.label.trim().toLowerCase() === suburb.trim().toLowerCase());
 
     // Check whether a matching suburb was found before starting the API request.
     if (searchSuburb) {
@@ -68,9 +61,7 @@ function Explore() {
       } catch (error) {
         console.error('Error fetching rental yield:', error);
 
-        setApiError(
-          'Unable to retrieve rental yield data. Please try again.'
-        );
+        setApiError(error instanceof Error ? error.message : 'An unexpected error occurred while retrieving rental yield data.');
       } finally {
         setLoading(false);
       }
@@ -80,6 +71,35 @@ function Explore() {
       setLoading(false);
       setApiError(`"${suburb.trim()}" is not a supported suburb.`);
       setYieldData(null);
+    }
+  }
+
+  // Retry fetching rental yield data for the submitted suburb.
+  function handleRetry() {
+    const searchSuburb = supportedSuburbs.find((supportedSuburb) => supportedSuburb.label === submittedSuburb);
+
+    if (searchSuburb) {
+      setSuburb(searchSuburb.label);
+
+      // Retry the previous search.
+      setSuggestions([]);
+
+      setInvalidSearch(false);
+      setLoading(true);
+      setApiError('');
+      setYieldData(null);
+
+      fetchRentalYield(searchSuburb.value).then((result) => {
+        setYieldData(result);
+      })
+        .catch((error: unknown) => {
+          console.error('Error fetching rental yield:', error);
+
+          setApiError(error instanceof Error ? error.message : 'An unexpected error occurred while retrieving rental yield data.');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
     }
   }
 
@@ -95,21 +115,14 @@ function Explore() {
     setApiError('');
 
     // Find suburbs whose labels contain the user's input
-    const suggestedSuburbs =
-      value.trim().length === 0
-        ? []
-        : supportedSuburbs.filter((supportedSuburb) => {
-          return supportedSuburb.label
-            .toLowerCase()
-            .includes(value.trim().toLowerCase());
-        });
+    const suggestedSuburbs = value.trim().length === 0 ? [] : supportedSuburbs.filter((supportedSuburb) => {
+      return supportedSuburb.label.toLowerCase().includes(value.trim().toLowerCase());
+    });
 
     // Store the matching suburb labels as suggestions
-    setSuggestions(
-      suggestedSuburbs.map((supportedSuburb) => {
-        return supportedSuburb.label;
-      })
-    );
+    setSuggestions(suggestedSuburbs.map((supportedSuburb) => {
+      return supportedSuburb.label;
+    }));
 
     if (isValidSearchBoxInput(value)) {
       setInvalidSearch(false);
@@ -133,6 +146,9 @@ function Explore() {
   const selectedSuburb = supportedSuburbs.find(
     (supportedSuburb) => supportedSuburb.label === submittedSuburb
   );
+
+  // Check whether rental yield data is available for either property type.
+  const hasRentalYieldData = yieldData !== null && (yieldData.house !== null || yieldData.unit !== null);
 
   return (
     <div className="explore-page">
@@ -166,7 +182,19 @@ function Explore() {
       )}
 
       {apiError !== '' && (
-        <p role="alert">{apiError}</p>
+        <div className="explore-error-panel" role="alert">
+          <p>{apiError}</p>
+
+          {submittedSuburb !== '' && (
+            <button
+              type="button"
+              className="retry-button"
+              onClick={handleRetry}
+            >
+              Try again
+            </button>
+          )}
+        </div>
       )}
 
       {/* Rental yield results */}
@@ -192,12 +220,20 @@ function Explore() {
             <div className="metric-card">
               <h2>Unit gross rental yield</h2>
               <p>
-                {yieldData? formatYield(yieldData.unit) : '—'}
+                {yieldData? formatYield(yieldData.unit): '—'}
               </p>
             </div>
           </>
         )}
       </section>
+
+      {/* Explain when the API request succeeded but no rental yield figures were available. */}
+      {yieldData && !hasRentalYieldData && !loading && (
+        <p className="explore-empty-state">
+          Rental yield data is not currently available for houses or units in this suburb.
+          Other market statistics may still be available.
+        </p>
+      )}
 
       {/* Link to the detailed suburb page */}
       {selectedSuburb && yieldData && !loading && !apiError && (

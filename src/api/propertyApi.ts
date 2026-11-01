@@ -74,6 +74,73 @@ function firstNumber(value: unknown): number | null {
   return null;
 }
 
+// Convert an HTTP status or API error into a user-friendly message.
+function getApiErrorMessage(status: number, message?: string): string {
+  switch (status) {
+    case 400:
+      return 'The market data service could not process this request. Please check the suburb and try again.';
+
+    case 401:
+      return 'The market data service requires authentication. Please try again later.';
+
+    case 403:
+      return 'Access to the market data service was denied. Please try again later.';
+
+    case 404:
+      return 'Market data could not be found for this suburb.';
+
+    case 408:
+      return 'The request timed out. Please try again.';
+
+    case 429:
+      return 'The market data service is receiving too many requests. Please wait a moment before trying again.';
+
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return 'The market data service is temporarily unavailable. Please try again later.';
+
+    default:
+      return message || `The market data service returned an error (${status}). Please try again later.`;
+  }
+}
+
+// Read the API response and handle HTTP errors.
+async function fetchApiResponse(url: string): Promise<unknown> {
+  let response: Response;
+
+  try {
+    response = await fetch(url, {
+      headers: {
+        Accept: 'application/json',
+      },
+    });
+  } catch {
+    throw new Error('Unable to connect to the market data service. Check your internet connection and try again.',);
+  }
+
+  let result: unknown;
+
+  try {
+    result = await response.json();
+  } catch {
+    if (!response.ok) {
+      throw new Error(getApiErrorMessage(response.status));
+    }
+
+    throw new Error('The market data service returned an invalid response. Please try again later.',);
+  }
+
+  if (!response.ok) {
+    const errorMessage = isRecord(result) && typeof result.error === 'string'? result.error: undefined;
+
+    throw new Error(getApiErrorMessage(response.status, errorMessage),);
+  }
+
+  return result;
+}
+
 // Fetch rental yield data for a suburb.
 export async function fetchRentalYield(
   suburb: string,
@@ -82,47 +149,25 @@ export async function fetchRentalYield(
 
   url.searchParams.set('suburb', suburb.trim());
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const response = await fetchApiResponse(url.toString());
 
-  let result: RentalYieldResponse;
-
-  try {
-    result = (await response.json()) as RentalYieldResponse;
-  } catch {
-    throw new Error(
-      'The market data service returned an invalid response.',
-    );
+  if (!isRecord(response)) {
+    throw new Error('The market data service returned an unexpected response.',);
   }
 
-  if (!response.ok) {
-    throw new Error(
-      result.error ??
-        `Request failed: ${response.status}`,
-    );
-  }
+  const result = response as RentalYieldResponse;
 
   if (!isRecord(result.data)) {
-    throw new Error(
-      'The API response did not contain market data.',
-    );
+    throw new Error('The API response did not contain market data for this suburb.',);
   }
 
   // The rental yield data is nested inside data.yield_pct.
   const yieldData = result.data.yield_pct;
 
   if (!isRecord(yieldData)) {
-    console.error(
-      'Rental yield data not found.',
-      Object.keys(result.data),
-    );
+    console.error('Rental yield data not found.',Object.keys(result.data),);
 
-    throw new Error(
-      'The API response did not contain rental yield data.',
-    );
+    throw new Error('Rental yield information is currently unavailable for this suburb.',);
   }
 
   // Extract the house and unit yields.
@@ -215,40 +260,19 @@ export interface SuburbPerformanceData {
   transaction_volume?: TransactionVolumeData | null;
 }
 
-// The response envelope returned by the API proxy.
-interface SuburbPerformanceResponse {
-  data?: unknown;
-  suburb?: string;
-  error?: string;
-}
-
 // Fetch suburb performance data.
 export async function fetchSuburbPerformance(suburb: string,): Promise<SuburbPerformanceData> {
   const url = new URL(API_BASE_URL);
 
   url.searchParams.set('suburb', suburb.trim());
 
-  const response = await fetch(url.toString(), {
-    headers: {
-      Accept: 'application/json',
-    },
-  });
+  const response = await fetchApiResponse(url.toString());
 
-  let result: SuburbPerformanceResponse;
-
-  try {
-    result = (await response.json()) as SuburbPerformanceResponse;
-  } catch {
-    throw new Error('The market data service returned an invalid response.',);
+  if (!isRecord(response) || !isRecord(response.data)) {
+    throw new Error(
+      'The API response did not contain suburb performance data.',
+    );
   }
 
-  if (!response.ok) {
-    throw new Error(result.error ?? `Request failed: ${response.status}`,);
-  }
-
-  if (!isRecord(result.data)) {
-    throw new Error('The API response did not contain suburb performance data.',);
-  }
-
-  return result.data as SuburbPerformanceData;
+  return response.data as SuburbPerformanceData;
 }

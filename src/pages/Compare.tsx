@@ -179,9 +179,7 @@ function Compare() {
 
       // Show an overall error if every request failed.
       if (newComparisonResults.every((result) => result.data === null)) {
-        setComparisonError(
-          'Unable to load market data for any of the selected suburbs. Please try again.',
-        );
+        setComparisonError('Unable to load market data for any of the selected suburbs. Check the errors below and try again.',);
       }
 
       setLoading(false);
@@ -327,6 +325,14 @@ function Compare() {
           {!loading && comparisonError && (
             <div className="compare-error-panel" role="alert">
               <p>{comparisonError}</p>
+
+              <ul className="comparison-error-list">
+                {comparisonResults.map((result) => (
+                  <li key={`${result.suburb.state}-${result.suburb.value}`}>
+                    <strong>{result.suburb.label}:</strong> {result.error}
+                  </li>
+                ))}
+              </ul>
 
               <button
                 type="button"

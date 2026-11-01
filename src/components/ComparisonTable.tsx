@@ -209,6 +209,9 @@ function ComparisonTable({ results }: ComparisonTableProps) {
     return { suburb: result.suburb.label, value: value ?? null, };
   });
 
+  // Check whether at least one suburb has data for the selected chart metric.
+  const hasChartData = chartData.some((result) => result.value !== null);
+
   // Get the available states from the original results.
   const availableStates = [...new Set(results.map((result) => result.suburb.state)),].sort();
 
@@ -367,40 +370,47 @@ function ComparisonTable({ results }: ComparisonTableProps) {
               </div>
             </div>
 
-            <div
-              className="comparison-chart"
-              role="img"
-              aria-label={`Bar chart comparing ${selectedMetric.label.toLowerCase()} for ${propertyType === 'house' ? 'houses' : 'units'}`}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
+            {hasChartData ? (
+              <div
+                className="comparison-chart"
+                role="img"
+                aria-label={`Bar chart comparing ${selectedMetric.label.toLowerCase()} for ${propertyType === 'house' ? 'houses' : 'units'}`}
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={chartData}
+                    margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" />
 
-                  <XAxis
-                    dataKey="suburb"
-                    tick={{ fontSize: 12 }}
-                  />
+                    <XAxis
+                      dataKey="suburb"
+                      tick={{ fontSize: 12 }}
+                    />
 
-                  <YAxis
-                    tick={{ fontSize: 12 }}
-                    width={90}
-                  />
+                    <YAxis
+                      tick={{ fontSize: 12 }}
+                      width={90}
+                    />
 
-                  <Tooltip
-                    formatter={(value) => [selectedMetric.format(typeof value === 'number' ? value : null,), selectedMetric.label,]}
-                  />
+                    <Tooltip
+                      formatter={(value) => [selectedMetric.format(typeof value === 'number' ? value : null,), selectedMetric.label,]}
+                    />
 
-                  <Bar
-                    dataKey="value"
-                    fill="#2563eb"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+                    <Bar
+                      dataKey="value"
+                      fill="#2563eb"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p className="comparison-no-data" role="status">
+                {selectedMetric.label} data is not available for any of the selected suburbs.
+                Try selecting a different metric or property type.
+              </p>
+            )}
           </section>
 
           <section className="comparison-table-section">
@@ -428,8 +438,8 @@ function ComparisonTable({ results }: ComparisonTableProps) {
                         </span>
 
                         {result.error && (
-                          <span className="table-error-label">
-                            Data unavailable
+                          <span className="table-error-label" title={result.error}>
+                            Request failed
                           </span>
                         )}
                       </th>
@@ -446,7 +456,7 @@ function ComparisonTable({ results }: ComparisonTableProps) {
                         <td
                           key={`${result.suburb.state}-${result.suburb.value}`}
                         >
-                          {result.data ? metric.format(metric.getValue(result.data)) : 'Unavailable'}
+                          {result.data ? metric.format(metric.getValue(result.data)) : 'Request failed'}
                         </td>
                       ))}
                     </tr>

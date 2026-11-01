@@ -302,3 +302,22 @@
     padding: 12px;
   }
 }
+
+/* No data available for the selected chart metric */
+.comparison-no-data {
+  padding: 20px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: #f9fafb;
+  color: #4b5563;
+  line-height: 1.6;
+}
+
+/* Failed suburb requests */
+.table-error-label {
+  display: block;
+  margin-top: 6px;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 600;
+}
