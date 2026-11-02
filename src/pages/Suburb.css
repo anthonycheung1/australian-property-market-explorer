@@ -293,3 +293,43 @@
     padding: 12px;
   }
 }
+
+/* Accessible historical chart data tables */
+.chart-data {
+  margin-top: 16px;
+  font-size: 14px;
+}
+
+.chart-data summary {
+  cursor: pointer;
+  font-weight: 600;
+  padding: 8px 0;
+}
+
+.chart-data summary:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 3px;
+}
+
+.chart-data table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 12px;
+}
+
+.chart-data caption {
+  text-align: left;
+  font-weight: 600;
+  padding: 8px 0;
+}
+
+.chart-data th,
+.chart-data td {
+  padding: 10px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+.chart-data th {
+  font-weight: 600;
+}

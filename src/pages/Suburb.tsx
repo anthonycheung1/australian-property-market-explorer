@@ -322,7 +322,9 @@ function Suburb() {
             <h2>Market overview</h2>
 
             <p className="section-description">
-              A snapshot of prices, rents and market conditions for the selected property type.
+              {historicalMetrics.find((metric) => metric.value === historicalMetric)?.description}
+              {' '}
+              {propertyType === 'all' ? 'Showing both houses and units.' : `Showing ${propertyType === 'house' ? 'houses' : 'units'} only.`}
             </p>
 
             <div className="metric-grid">
@@ -415,7 +417,12 @@ function Suburb() {
               Historical price growth reported by the market data provider. Values are displayed as percentages.
             </p>
 
-            <div className="table-wrapper">
+            <div
+              className="table-wrapper"
+              role="region"
+              aria-label="Price growth comparison table"
+              tabIndex={0}
+            >
               <table className="growth-table">
                 <thead>
                   <tr>
