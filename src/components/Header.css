@@ -104,3 +104,11 @@
     font-size: 16px;
   }
 }
+
+/* Ensure keyboard focus remains visible */
+
+.site-header a:focus-visible,
+.site-header button:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}

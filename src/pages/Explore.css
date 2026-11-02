@@ -99,7 +99,7 @@
 
 /* State and territory abbreviations */
 .availability-list span {
-  color: #777f8d;
+  color: #596579;
   font-size: 11px;
 }
 
@@ -146,4 +146,19 @@
 
 .explore-error-panel .retry-button {
   margin-top: 8px;
+}
+
+/* Visible keyboard focus for search controls */
+
+.search-section input:focus-visible,
+.search-section button:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
+
+/* Highlight the currently active autocomplete suggestion */
+
+.suggestion-option.active {
+  outline: 2px solid #1d4ed8;
+  outline-offset: -2px;
 }

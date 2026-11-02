@@ -374,7 +374,7 @@ function ComparisonTable({ results }: ComparisonTableProps) {
               <div
                 className="comparison-chart"
                 role="img"
-                aria-label={`Bar chart comparing ${selectedMetric.label.toLowerCase()} for ${propertyType === 'house' ? 'houses' : 'units'}`}
+                aria-label={`Bar chart comparing ${selectedMetric.label.toLowerCase()} for ${propertyType === 'house' ? 'houses' : 'units'} across ${sortedResults.length} suburbs. The corresponding numerical data is available in the comparison table below.`}
               >
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
@@ -416,9 +416,14 @@ function ComparisonTable({ results }: ComparisonTableProps) {
           <section className="comparison-table-section">
             <h3>Market data comparison</h3>
 
-            <div className="comparison-table-wrapper">
+            <div
+              className="comparison-table-wrapper"
+              tabIndex={0}
+              role="region"
+              aria-label="Scrollable market data comparison table"
+            >
               <table className="comparison-table">
-                <caption>
+                <caption id="comparison-table-caption">
                   Property market metrics across selected suburbs
                 </caption>
 

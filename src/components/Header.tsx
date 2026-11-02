@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import './Header.css';
 
 function Header() {
@@ -54,27 +54,27 @@ function Header() {
       >
         <ul className="nav-links">
           <li>
-            <Link to="/" onClick={handleNavigation}>
+            <NavLink to="/" onClick={handleNavigation} end>
               Home
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link to="/explore" onClick={handleNavigation}>
+            <NavLink to="/explore" onClick={handleNavigation}>
               Explore
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link to="/compare" onClick={handleNavigation}>
+            <NavLink to="/compare" onClick={handleNavigation}>
               Compare
-            </Link>
+            </NavLink>
           </li>
 
           <li>
-            <Link to="/about" onClick={handleNavigation}>
+            <NavLink to="/about" onClick={handleNavigation}>
               About
-            </Link>
+            </NavLink>
           </li>
         </ul>
       </nav>

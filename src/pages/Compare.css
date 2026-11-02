@@ -270,3 +270,13 @@
   margin-bottom: 8px;
   line-height: 1.5;
 }
+
+/* Visible keyboard focus for comparison page controls */
+
+.compare-page button:focus-visible,
+.compare-page a:focus-visible,
+.compare-page input:focus-visible,
+.compare-page select:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}

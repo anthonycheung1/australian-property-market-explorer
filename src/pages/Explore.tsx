@@ -172,13 +172,15 @@ function Explore() {
 
       {/* Search status and errors */}
       {submittedSuburb !== '' && (
-        <h2 className="search-results-heading">
+        <h2 className="search-results-heading" aria-live="polite">
           Search results for {submittedSuburb}
         </h2>
       )}
 
       {loading && (
-        <p role="status">Retrieving property data...</p>
+        <p role="status" aria-live="polite">
+          Retrieving property data for {submittedSuburb}...
+        </p>
       )}
 
       {apiError !== '' && (
@@ -213,14 +215,14 @@ function Explore() {
             <div className="metric-card">
               <h2>House gross rental yield</h2>
               <p>
-                {yieldData? formatYield(yieldData.house): '—'}
+                {yieldData ? formatYield(yieldData.house) : '—'}
               </p>
             </div>
 
             <div className="metric-card">
               <h2>Unit gross rental yield</h2>
               <p>
-                {yieldData? formatYield(yieldData.unit): '—'}
+                {yieldData ? formatYield(yieldData.unit) : '—'}
               </p>
             </div>
           </>
@@ -249,7 +251,7 @@ function Explore() {
       {/* Data source information */}
       {yieldData && (
         <p className="data-source">
-          Data for {yieldData.area_name}
+          Data source information: {yieldData.area_name}
           {yieldData.as_of && ` · Updated ${yieldData.as_of}`}
         </p>
       )}

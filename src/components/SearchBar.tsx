@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import type { FormEvent, KeyboardEvent } from 'react';
 import './SearchBar.css';
 
@@ -25,8 +25,16 @@ function SearchBar({
 }: SearchBarProps) {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
 
+  // Generate unique IDs for the input and suggestion list.
+  const searchId = useId();
+  const inputId = `${searchId}-suburb-search`;
+  const suggestionsId = `${searchId}-suburb-suggestions`;
+  const errorId = `${searchId}-suburb-error`;
+
+  const suggestionsVisible = suggestedSuburbs.length > 0;
+
   function handleKeyDown(event: KeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'ArrowDown' && suggestedSuburbs.length > 0) {
+    if (event.key === 'ArrowDown' && suggestionsVisible) {
       event.preventDefault();
 
       setActiveSuggestionIndex((currentIndex) =>
@@ -36,7 +44,7 @@ function SearchBar({
       );
     }
 
-    if (event.key === 'ArrowUp' && suggestedSuburbs.length > 0) {
+    if (event.key === 'ArrowUp' && suggestionsVisible) {
       event.preventDefault();
 
       setActiveSuggestionIndex((currentIndex) =>
@@ -57,7 +65,7 @@ function SearchBar({
       setActiveSuggestionIndex(-1);
     }
 
-    if (event.key === 'Escape' && suggestedSuburbs.length > 0) {
+    if (event.key === 'Escape' && suggestionsVisible) {
       event.preventDefault();
 
       onDismissSuggestions();
@@ -90,10 +98,10 @@ function SearchBar({
   return (
     <section className="search-section">
       <form onSubmit={handleSubmit}>
-        <label htmlFor="suburb-search">Suburb</label>
+        <label htmlFor={inputId}>Suburb</label>
 
         <input
-          id="suburb-search"
+          id={inputId}
           name="suburb"
           className="search-box"
           type="text"
@@ -104,29 +112,30 @@ function SearchBar({
           autoComplete="off"
           role="combobox"
           aria-autocomplete="list"
-          aria-expanded={suggestedSuburbs.length > 0}
-          aria-controls="suburb-suggestions"
+          aria-haspopup="listbox"
+          aria-expanded={suggestionsVisible}
+          aria-controls={suggestionsId}
           aria-activedescendant={
             activeSuggestionIndex >= 0 &&
               activeSuggestionIndex < suggestedSuburbs.length
-              ? `suburb-suggestion-${activeSuggestionIndex}`
+              ? `${suggestionsId}-${activeSuggestionIndex}`
               : undefined
           }
           aria-invalid={invalidSearch}
-          aria-describedby={invalidSearch ? 'suburb-error' : undefined}
+          aria-describedby={invalidSearch ? errorId : undefined}
         />
 
-        {suggestedSuburbs.length > 0 && (
+        {suggestionsVisible && (
           <div
             className="suggestions-list"
-            id="suburb-suggestions"
+            id={suggestionsId}
             role="listbox"
             aria-label="Suburb suggestions"
           >
             {suggestedSuburbs.map((suggestion, index) => (
               <div
                 key={suggestion}
-                id={`suburb-suggestion-${index}`}
+                id={`${suggestionsId}-${index}`}
                 className={`suggestion-option ${index === activeSuggestionIndex ? 'active' : ''}`}
                 role="option"
                 aria-selected={index === activeSuggestionIndex}
@@ -141,7 +150,7 @@ function SearchBar({
         )}
 
         {invalidSearch && (
-          <p className="validation-error" id="suburb-error" role="alert">
+          <p className="validation-error" id={errorId} role="alert">
             Please enter a suburb.
           </p>
         )}

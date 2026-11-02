@@ -245,7 +245,7 @@ function Compare() {
           </p>
         )}
 
-        <p className="compare-count">
+        <p className="compare-count" role="status" aria-live="polite">
           {selectedSuburbs.length} of 3 suburbs selected
         </p>
       </section>
@@ -286,7 +286,7 @@ function Compare() {
         )}
 
         {selectedSuburbs.length === 3 && (
-          <p className="compare-limit-message">
+          <p className="compare-limit-message" role="status">
             You've reached the maximum of three suburbs. Remove a suburb before adding another.
           </p>
         )}
@@ -306,8 +306,8 @@ function Compare() {
 
           {loading && (
             <div className="comparison-loading">
-              <p className="compare-loading" role="status">
-                Loading market data for {selectedSuburbs.length} {selectedSuburbs.length === 1 ? 'suburb' : 'suburbs'}…
+              <p className="compare-loading" role="status" aria-live="polite">
+                Loading market data for {selectedSuburbs.length} {selectedSuburbs.length === 1 ? 'suburb' : 'suburbs'}...
               </p>
 
               <section className="comparison-chart-section">

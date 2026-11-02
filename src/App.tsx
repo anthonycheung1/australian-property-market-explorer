@@ -15,9 +15,13 @@ function Home() {
 function App() {
   return (
     <BrowserRouter basename="/australian-property-market-explorer">
+      <a className="skip-link" href="#main-content">
+        Skip to main content
+      </a>
+
       <Header />
 
-      <main>
+      <main id="main-content" tabIndex={-1}>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/explore" element={<Explore />} />

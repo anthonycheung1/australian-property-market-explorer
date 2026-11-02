@@ -321,3 +321,19 @@
   font-size: 12px;
   font-weight: 600;
 }
+
+/* Visible keyboard focus for the horizontally scrollable table */
+
+.comparison-table-wrapper:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 3px;
+}
+
+/* Ensure buttons and controls have visible keyboard focus */
+
+.comparison-visualisation button:focus-visible,
+.comparison-visualisation select:focus-visible,
+.comparison-visualisation input:focus-visible {
+  outline: 3px solid #1d4ed8;
+  outline-offset: 2px;
+}
