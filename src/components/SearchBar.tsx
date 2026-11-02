@@ -10,6 +10,7 @@ interface SearchBarProps {
   onSearch: () => void;
   loading: boolean;
   invalidSearch: boolean;
+  validationMessage?: string;
   suggestedSuburbs: string[]; // This stores (potentially several) matches
 }
 
@@ -21,6 +22,7 @@ function SearchBar({
   onSearch,
   loading,
   invalidSearch,
+  validationMessage = 'Please enter a suburb.',
   suggestedSuburbs,
 }: SearchBarProps) {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
@@ -114,7 +116,7 @@ function SearchBar({
           aria-autocomplete="list"
           aria-haspopup="listbox"
           aria-expanded={suggestionsVisible}
-          aria-controls={suggestionsId}
+          aria-controls={suggestionsVisible ? suggestionsId : undefined}
           aria-activedescendant={
             activeSuggestionIndex >= 0 &&
               activeSuggestionIndex < suggestedSuburbs.length
@@ -151,7 +153,7 @@ function SearchBar({
 
         {invalidSearch && (
           <p className="validation-error" id={errorId} role="alert">
-            Please enter a suburb.
+            {validationMessage}
           </p>
         )}
 

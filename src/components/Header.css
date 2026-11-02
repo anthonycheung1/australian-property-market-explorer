@@ -31,13 +31,6 @@
   background-color: #f1f5f9;
 }
 
-.nav-toggle:focus-visible,
-.nav-links a:focus-visible,
-.logo:focus-visible {
-  outline: 2px solid #2563eb;
-  outline-offset: 3px;
-}
-
 .site-header nav {
   min-width: 0;
 }

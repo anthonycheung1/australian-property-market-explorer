@@ -60,12 +60,6 @@
   background-color: #eff6ff;
 }
 
-.suggestion-option:focus-visible {
-  position: relative;
-  outline: 2px solid #2563eb;
-  outline-offset: -2px;
-}
-
 .validation-error {
   margin: 0;
   color: #b42318;
@@ -126,7 +120,7 @@
 }
 
 .availability-list span {
-  color: #777f8d;
+  color: #596579;
   font-size: 11px;
 }
 

@@ -70,12 +70,6 @@ function Header() {
               Compare
             </NavLink>
           </li>
-
-          <li>
-            <NavLink to="/about" onClick={handleNavigation}>
-              About
-            </NavLink>
-          </li>
         </ul>
       </nav>
     </header>

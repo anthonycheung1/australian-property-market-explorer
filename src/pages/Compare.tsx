@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { supportedSuburbs } from '../data/suburbs.ts';
 import { fetchSuburbPerformance, type SuburbPerformanceData } from '../api/propertyApi';
@@ -236,14 +237,9 @@ function Compare() {
           onSearch={handleSearch}
           loading={false}
           invalidSearch={invalidSearch}
+          validationMessage={searchError}
           suggestedSuburbs={suggestedSuburbs}
         />
-
-        {searchError && (
-          <p className="compare-error" role="alert">
-            {searchError}
-          </p>
-        )}
 
         <p className="compare-count" role="status" aria-live="polite">
           {selectedSuburbs.length} of 3 suburbs selected
