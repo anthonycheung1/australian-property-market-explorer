@@ -70,20 +70,31 @@ function RentChart({
               left: 10,
             }}
           >
-            <CartesianGrid strokeDasharray="3 3" />
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
 
             <XAxis
               dataKey="date"
               tickFormatter={formatDate}
+              tick={{ fill: 'var(--chart-text)' }}
+              stroke="var(--chart-axis)"
               minTickGap={30}
             />
 
             <YAxis
               tickFormatter={formatRent}
+              tick={{ fill: 'var(--chart-text)' }}
+              stroke="var(--chart-axis)"
               width={75}
             />
 
             <Tooltip
+              contentStyle={{
+                backgroundColor: 'var(--chart-tooltip-background)',
+                border: '1px solid var(--chart-tooltip-border)',
+                color: 'var(--chart-tooltip-text)',
+              }}
+              labelStyle={{ color: 'var(--chart-tooltip-text)' }}
+              itemStyle={{ color: 'var(--chart-tooltip-text)' }}
               labelFormatter={(label) =>
                 formatDate(String(label))
               }
@@ -93,14 +104,14 @@ function RentChart({
               ]}
             />
 
-            <Legend />
+            <Legend wrapperStyle={{ color: "var(--chart-text)" }} />
 
             {showHouses && (
               <Line
                 type="monotone"
                 dataKey="houseRent"
                 name="Houses"
-                stroke="#2563eb"
+                stroke="var(--chart-house)"
                 dot={false}
                 connectNulls={false}
               />
@@ -111,7 +122,7 @@ function RentChart({
                 type="monotone"
                 dataKey="unitRent"
                 name="Units"
-                stroke="#16a34a"
+                stroke="var(--chart-unit)"
                 strokeDasharray="5 5"
                 dot={false}
                 connectNulls={false}

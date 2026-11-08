@@ -2,7 +2,12 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import './Header.css';
 
-function Header() {
+interface HeaderProps {
+  theme: 'light' | 'dark';
+  onToggleTheme: () => void;
+}
+
+function Header({ theme, onToggleTheme }: HeaderProps) {
   // Store whether the mobile navigation menu is open.
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -35,6 +40,16 @@ function Header() {
       >
         MyDashboard
       </Link>
+
+      <button
+        type="button"
+        className="theme-toggle"
+        onClick={onToggleTheme}
+        aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+        aria-pressed={theme === 'dark'}
+      >
+        {theme === 'light' ? 'Dark mode' : 'Light mode'}
+      </button>
 
       <button
         type="button"

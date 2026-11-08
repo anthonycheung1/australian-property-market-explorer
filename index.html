@@ -8,6 +8,17 @@
   <meta name="description" content="A dashboard for exploring the Australian property market." />
 
   <title>Australian Property Market Explorer</title>
+
+  <script>
+    (() => {
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme === 'light' || savedTheme === 'dark'? savedTheme: systemPrefersDark ? 'dark' : 'light';
+
+      document.documentElement.dataset.theme = theme;
+      document.documentElement.style.colorScheme = theme;
+    })();
+  </script>
 </head>
 
 <body>

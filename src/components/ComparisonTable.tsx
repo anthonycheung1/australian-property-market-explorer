@@ -381,25 +381,34 @@ function ComparisonTable({ results }: ComparisonTableProps) {
                     data={chartData}
                     margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--chart-grid)" />
 
                     <XAxis
                       dataKey="suburb"
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 12, fill: 'var(--chart-text)' }}
+                      stroke="var(--chart-axis)"
                     />
 
                     <YAxis
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 12, fill: 'var(--chart-text)' }}
+                      stroke="var(--chart-axis)"
                       width={90}
                     />
 
                     <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'var(--chart-tooltip-background)',
+                        border: '1px solid var(--chart-tooltip-border)',
+                        color: 'var(--chart-tooltip-text)',
+                      }}
+                      labelStyle={{ color: 'var(--chart-tooltip-text)' }}
+                      itemStyle={{ color: 'var(--chart-tooltip-text)' }}
                       formatter={(value) => [selectedMetric.format(typeof value === 'number' ? value : null,), selectedMetric.label,]}
                     />
 
                     <Bar
                       dataKey="value"
-                      fill="#2563eb"
+                      fill="var(--chart-bar)"
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>

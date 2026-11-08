@@ -18,51 +18,51 @@
   width: 100%;
   box-sizing: border-box;
   padding: 12px;
-  border: 1px solid #b8c0cc;
+  border: 1px solid var(--input-border);
   border-radius: 6px;
   font-size: 16px;
-  background-color: #ffffff;
-  color: #222222;
+  background-color: var(--input-background);
+  color: var(--input-text);
 }
 
 .search-box:focus {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--focus-color);
   outline-offset: 2px;
-  border-color: #2563eb;
+  border-color: var(--focus-color);
 }
 
 .suggestions-list {
   display: flex;
   flex-direction: column;
-  border: 1px solid #e0e4eb;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   overflow: hidden;
-  background-color: #ffffff;
+  background-color: var(--input-background);
 }
 
 .suggestion-option {
   width: 100%;
   padding: 10px 12px;
   border: none;
-  background-color: #ffffff;
-  color: #222222;
+  background-color: var(--input-background);
+  color: var(--input-text);
   font-size: 14px;
   text-align: left;
   cursor: pointer;
 }
 
 .suggestion-option + .suggestion-option {
-  border-top: 1px solid #e0e4eb;
+  border-top: 1px solid var(--border-color);
 }
 
 .suggestion-option:hover,
 .suggestion-option.active {
-  background-color: #eff6ff;
+  background-color: var(--surface-hover);
 }
 
 .validation-error {
   margin: 0;
-  color: #b42318;
+  color: var(--error-strong);
   font-size: 14px;
 }
 
@@ -70,18 +70,18 @@
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
-  background-color: #2563eb;
-  color: #ffffff;
+  background-color: var(--focus-color);
+  color: var(--input-background);
   font-size: 16px;
   cursor: pointer;
 }
 
 .search-button:hover:not(:disabled) {
-  background-color: #1d4ed8;
+  background-color: var(--focus-color);
 }
 
 .search-button:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--focus-color);
   outline-offset: 3px;
 }
 
@@ -93,14 +93,14 @@
 .availability-note {
   margin-top: 8px;
   padding: 12px;
-  border: 1px solid #e0e4eb;
+  border: 1px solid var(--border-color);
   border-radius: 6px;
-  background-color: #f7f8fa;
+  background-color: var(--surface-muted);
 }
 
 .availability-heading {
   margin: 0 0 8px;
-  color: #596579;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 600;
 }
@@ -111,7 +111,7 @@
   gap: 6px 12px;
   margin: 0;
   padding-left: 18px;
-  color: #39465a;
+  color: var(--text-tertiary);
   font-size: 12px;
 }
 
@@ -120,7 +120,7 @@
 }
 
 .availability-list span {
-  color: #596579;
+  color: var(--text-muted);
   font-size: 11px;
 }
 

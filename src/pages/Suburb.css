@@ -4,7 +4,7 @@
   margin: 0 auto;
   padding: 32px 24px 48px;
   box-sizing: border-box;
-  color: var(--text-color, #1f2937);
+  color: var(--text-primary);
 }
 
 .suburb-heading {
@@ -13,7 +13,7 @@
 
 .suburb-eyebrow {
   margin-bottom: 8px;
-  color: #2563eb;
+  color: var(--chart-house);
   font-size: 12px;
   font-weight: 700;
   letter-spacing: 1.5px;
@@ -28,7 +28,7 @@
 .suburb-heading > p:not(.suburb-eyebrow) {
   margin-top: 8px;
   margin-bottom: 0;
-  color: var(--muted-text-color, #64748b);
+  color: var(--muted-text-color, var(--text-secondary));
 }
 
 .suburb-heading .data-date {
@@ -47,7 +47,7 @@
 
 .section-description {
   margin: 0 0 20px;
-  color: var(--muted-text-color, #64748b);
+  color: var(--muted-text-color, var(--text-secondary));
   line-height: 1.6;
 }
 
@@ -60,15 +60,15 @@
 .metric-card {
   min-width: 0;
   padding: 20px;
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 12px;
-  background: var(--card-background, #ffffff);
-  box-shadow: 0 2px 6px rgb(15 23 42 / 4%);
+  background: var(--card-background, var(--surface-background));
+  box-shadow: var(--shadow);
 }
 
 .metric-card h3 {
   margin: 0 0 14px;
-  color: var(--muted-text-color, #64748b);
+  color: var(--muted-text-color, var(--text-secondary));
   font-size: 13px;
   font-weight: 600;
   line-height: 1.5;
@@ -84,31 +84,31 @@
 
 .metric-detail {
   margin: 8px 0 0;
-  color: var(--muted-text-color, #64748b);
+  color: var(--muted-text-color, var(--text-secondary));
   font-size: 12px;
 }
 
 .table-wrapper {
   overflow-x: auto;
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 12px;
 }
 
 .growth-table {
   width: 100%;
   border-collapse: collapse;
-  background: var(--card-background, #ffffff);
+  background: var(--card-background, var(--surface-background));
 }
 
 .growth-table th,
 .growth-table td {
   padding: 16px 20px;
-  border-bottom: 1px solid var(--border-color, #e2e8f0);
+  border-bottom: 1px solid var(--border-color, var(--border-color));
   text-align: left;
 }
 
 .growth-table thead th {
-  background: var(--table-header-background, #f8fafc);
+  background: var(--table-header-background, var(--table-header-background));
   font-size: 13px;
   font-weight: 700;
 }
@@ -124,9 +124,9 @@
 
 .chart-card {
   padding: 20px;
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 12px;
-  background: var(--card-background, #ffffff);
+  background: var(--card-background, var(--surface-background));
 }
 
 .chart-legend {
@@ -151,11 +151,11 @@
 }
 
 .house-dot {
-  background: #2563eb;
+  background: var(--chart-house);
 }
 
 .unit-dot {
-  background: #ea580c;
+  background: var(--chart-unit);
 }
 
 .chart-scroll {
@@ -172,12 +172,12 @@
 }
 
 .chart-grid-line {
-  stroke: var(--border-color, #e2e8f0);
+  stroke: var(--border-color, var(--border-color));
   stroke-width: 1;
 }
 
 .chart-axis-label {
-  fill: var(--muted-text-color, #64748b);
+  fill: var(--muted-text-color, var(--text-secondary));
   font-size: 12px;
 }
 
@@ -190,19 +190,19 @@
 }
 
 .house-price-line {
-  stroke: #2563eb;
+  stroke: var(--chart-house);
 }
 
 .unit-price-line {
-  stroke: #ea580c;
+  stroke: var(--chart-unit);
 }
 
 .data-quality-note {
   margin: 16px 0 0;
   padding: 12px;
-  border-left: 3px solid #d97706;
-  background: var(--notice-background, #fffbeb);
-  color: var(--notice-text, #92400e);
+  border-left: 3px solid var(--notice-border);
+  background: var(--notice-background, var(--notice-background));
+  color: var(--notice-text, var(--notice-text));
   font-size: 13px;
   line-height: 1.6;
 }
@@ -210,17 +210,17 @@
 .status-message,
 .empty-message {
   padding: 20px;
-  border: 1px solid var(--border-color, #e2e8f0);
+  border: 1px solid var(--border-color, var(--border-color));
   border-radius: 10px;
-  color: var(--muted-text-color, #64748b);
+  color: var(--muted-text-color, var(--text-secondary));
 }
 
 .error-message {
   padding: 20px;
-  border: 1px solid #fecaca;
+  border: 1px solid var(--error-border);
   border-radius: 10px;
-  background: #fef2f2;
-  color: #991b1b;
+  background: var(--error-background);
+  color: var(--error-text);
 }
 
 .error-message h2 {
@@ -231,23 +231,23 @@
   padding: 10px 16px;
   border: none;
   border-radius: 6px;
-  background: #b91c1c;
-  color: #ffffff;
+  background: var(--error-strong);
+  color: var(--surface-background);
   cursor: pointer;
 }
 
 .error-message button:hover {
-  background: #991b1b;
+  background: var(--error-text);
 }
 
 .error-message button:focus-visible {
-  outline: 3px solid #fca5a5;
+  outline: 3px solid var(--focus-color);
   outline-offset: 3px;
 }
 
 .disclaimer {
   margin-top: 32px;
-  color: var(--muted-text-color, #64748b);
+  color: var(--muted-text-color, var(--text-secondary));
   font-size: 12px;
   line-height: 1.6;
 }
@@ -307,7 +307,7 @@
 }
 
 .chart-data summary:focus-visible {
-  outline: 2px solid #2563eb;
+  outline: 2px solid var(--chart-house);
   outline-offset: 3px;
 }
 
@@ -326,7 +326,7 @@
 .chart-data th,
 .chart-data td {
   padding: 10px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--border-color);
   text-align: left;
 }
 
