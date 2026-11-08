@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { supportedSuburbs } from '../data/suburbs.ts';
 import { fetchSuburbPerformance, type SuburbPerformanceData } from '../api/propertyApi';
@@ -40,11 +40,15 @@ function getInitialSelectedSuburbs(searchParams: URLSearchParams): SupportedSubu
 
 function Compare() {
   const [searchParams, setSearchParams] = useSearchParams();
+
   // Store the suburb currently entered into the search field.
   const [suburb, setSuburb] = useState('');
 
-  // Store the suburbs selected for comparison.
-  const [selectedSuburbs, setSelectedSuburbs] = useState<SupportedSuburb[]>(() => getInitialSelectedSuburbs(searchParams));
+  // Derive the selected suburbs from the URL.
+  const selectedSuburbs = useMemo(
+    () => getInitialSelectedSuburbs(searchParams),
+    [searchParams],
+  );
 
   // Store the market data returned for each selected suburb.
   const [comparisonResults, setComparisonResults] = useState<SuburbComparisonResult[]>([]);
@@ -60,20 +64,6 @@ function Compare() {
 
   // Control whether suburb suggestions should be displayed.
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
-
-  // Restore comparison selections when the URL changes, including browser navigation.
-  useEffect(() => {
-    const urlSelectedSuburbs = getInitialSelectedSuburbs(searchParams);
-
-    setSelectedSuburbs((currentSuburbs) => {
-      const selectionsMatch = currentSuburbs.length === urlSelectedSuburbs.length
-        && currentSuburbs.every((currentSuburb, index) =>
-          currentSuburb.value === urlSelectedSuburbs[index].value,
-        );
-
-      return selectionsMatch ? currentSuburbs : urlSelectedSuburbs;
-    });
-  }, [searchParams]);
 
   // Update the URL whenever the comparison selection changes.
   function updateComparisonUrl(suburbs: SupportedSuburb[]) {
@@ -160,7 +150,6 @@ function Compare() {
       matchingSuburb,
     ];
 
-    setSelectedSuburbs(updatedSuburbs);
     updateComparisonUrl(updatedSuburbs);
 
     setSuburb('');
@@ -176,7 +165,6 @@ function Compare() {
       || selectedSuburb.value !== suburbToRemove.value,
     );
 
-    setSelectedSuburbs(updatedSuburbs);
     updateComparisonUrl(updatedSuburbs);
   }
 
