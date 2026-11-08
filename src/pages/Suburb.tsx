@@ -139,24 +139,24 @@ function Suburb() {
       return;
     }
 
-    let cancelled = false;
+    const controller = new AbortController();
     const selectedSuburb = matchingSuburb.value;
 
-    fetchSuburbPerformance(selectedSuburb)
+    fetchSuburbPerformance(selectedSuburb, controller.signal)
       .then((data) => {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setResult({ suburb: selectedSuburb, data, error: '', });
         }
       })
       .catch((fetchError: unknown) => {
-        if (!cancelled) {
+        if (!controller.signal.aborted) {
           setResult({ suburb: selectedSuburb, data: null, error: fetchError instanceof Error ? fetchError.message : 'Unable to load suburb performance data.', });
         }
       });
 
-    // Prevent an outdated request from updating the page.
+    // Cancel the request if the route changes or the page unmounts.
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [matchingSuburb]);
 

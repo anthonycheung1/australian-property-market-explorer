@@ -107,7 +107,7 @@ function getApiErrorMessage(status: number, message?: string): string {
 }
 
 // Read the API response and handle HTTP errors.
-async function fetchApiResponse(url: string): Promise<unknown> {
+async function fetchApiResponse(url: string, signal?: AbortSignal): Promise<unknown> {
   let response: Response;
 
   try {
@@ -115,8 +115,14 @@ async function fetchApiResponse(url: string): Promise<unknown> {
       headers: {
         Accept: 'application/json',
       },
+      signal,
     });
-  } catch {
+  } catch (fetchError) {
+    // Allow components to handle cancelled requests without displaying an error.
+    if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+      throw fetchError;
+    }
+
     throw new Error('Unable to connect to the market data service. Check your internet connection and try again.',);
   }
 
@@ -124,7 +130,12 @@ async function fetchApiResponse(url: string): Promise<unknown> {
 
   try {
     result = await response.json();
-  } catch {
+  } catch (parseError) {
+    // Do not treat an aborted response as invalid JSON.
+    if (parseError instanceof Error && parseError.name === 'AbortError') {
+      throw parseError;
+    }
+
     if (!response.ok) {
       throw new Error(getApiErrorMessage(response.status));
     }
@@ -144,12 +155,13 @@ async function fetchApiResponse(url: string): Promise<unknown> {
 // Fetch rental yield data for a suburb.
 export async function fetchRentalYield(
   suburb: string,
+  signal?: AbortSignal,
 ): Promise<RentalYieldData> {
   const url = new URL(API_BASE_URL);
 
   url.searchParams.set('suburb', suburb.trim());
 
-  const response = await fetchApiResponse(url.toString());
+  const response = await fetchApiResponse(url.toString(), signal);
 
   if (!isRecord(response)) {
     throw new Error('The market data service returned an unexpected response.',);
@@ -261,12 +273,15 @@ export interface SuburbPerformanceData {
 }
 
 // Fetch suburb performance data.
-export async function fetchSuburbPerformance(suburb: string,): Promise<SuburbPerformanceData> {
+export async function fetchSuburbPerformance(
+  suburb: string,
+  signal?: AbortSignal,
+): Promise<SuburbPerformanceData> {
   const url = new URL(API_BASE_URL);
 
   url.searchParams.set('suburb', suburb.trim());
 
-  const response = await fetchApiResponse(url.toString());
+  const response = await fetchApiResponse(url.toString(), signal);
 
   if (!isRecord(response) || !isRecord(response.data)) {
     throw new Error(

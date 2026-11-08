@@ -1,5 +1,5 @@
-
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { supportedSuburbs } from '../data/suburbs.ts';
 import { fetchSuburbPerformance, type SuburbPerformanceData } from '../api/propertyApi';
 // import { formatMoney, formatPercent, formatDate } from '../utils/formatters';
@@ -17,12 +17,34 @@ interface SuburbComparisonResult {
   error: string;
 }
 
+// Restore supported suburb selections from the URL.
+function getInitialSelectedSuburbs(searchParams: URLSearchParams): SupportedSuburb[] {
+  const selectedSuburbs: SupportedSuburb[] = [];
+
+  searchParams.getAll('suburb').forEach((value) => {
+    const matchingSuburb = supportedSuburbs.find((supportedSuburb) =>
+      supportedSuburb.value.toLowerCase() === value.toLowerCase(),
+    );
+
+    if (
+      matchingSuburb
+      && !selectedSuburbs.some((selectedSuburb) => selectedSuburb.value === matchingSuburb.value)
+      && selectedSuburbs.length < 3
+    ) {
+      selectedSuburbs.push(matchingSuburb);
+    }
+  });
+
+  return selectedSuburbs;
+}
+
 function Compare() {
+  const [searchParams, setSearchParams] = useSearchParams();
   // Store the suburb currently entered into the search field.
   const [suburb, setSuburb] = useState('');
 
   // Store the suburbs selected for comparison.
-  const [selectedSuburbs, setSelectedSuburbs] = useState<SupportedSuburb[]>([]);
+  const [selectedSuburbs, setSelectedSuburbs] = useState<SupportedSuburb[]>(() => getInitialSelectedSuburbs(searchParams));
 
   // Store the market data returned for each selected suburb.
   const [comparisonResults, setComparisonResults] = useState<SuburbComparisonResult[]>([]);
@@ -38,6 +60,32 @@ function Compare() {
 
   // Control whether suburb suggestions should be displayed.
   const [suggestionsDismissed, setSuggestionsDismissed] = useState(false);
+
+  // Restore comparison selections when the URL changes, including browser navigation.
+  useEffect(() => {
+    const urlSelectedSuburbs = getInitialSelectedSuburbs(searchParams);
+
+    setSelectedSuburbs((currentSuburbs) => {
+      const selectionsMatch = currentSuburbs.length === urlSelectedSuburbs.length
+        && currentSuburbs.every((currentSuburb, index) =>
+          currentSuburb.value === urlSelectedSuburbs[index].value,
+        );
+
+      return selectionsMatch ? currentSuburbs : urlSelectedSuburbs;
+    });
+  }, [searchParams]);
+
+  // Update the URL whenever the comparison selection changes.
+  function updateComparisonUrl(suburbs: SupportedSuburb[]) {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete('suburb');
+
+    suburbs.forEach((selectedSuburb) => {
+      nextSearchParams.append('suburb', selectedSuburb.value);
+    });
+
+    setSearchParams(nextSearchParams);
+  }
 
   // Find supported suburbs that match the search input.
   const suggestedSuburbs = suburb.trim() && !suggestionsDismissed
@@ -107,10 +155,13 @@ function Compare() {
       return;
     }
 
-    setSelectedSuburbs((currentSuburbs) => [
-      ...currentSuburbs,
+    const updatedSuburbs = [
+      ...selectedSuburbs,
       matchingSuburb,
-    ]);
+    ];
+
+    setSelectedSuburbs(updatedSuburbs);
+    updateComparisonUrl(updatedSuburbs);
 
     setSuburb('');
     setInvalidSearch(false);
@@ -120,17 +171,18 @@ function Compare() {
 
   // Remove a suburb from the comparison.
   function handleRemoveSuburb(suburbToRemove: SupportedSuburb) {
-    setSelectedSuburbs((currentSuburbs) =>
-      currentSuburbs.filter((selectedSuburb) =>
-        selectedSuburb.state !== suburbToRemove.state
-        || selectedSuburb.value !== suburbToRemove.value,
-      ),
+    const updatedSuburbs = selectedSuburbs.filter((selectedSuburb) =>
+      selectedSuburb.state !== suburbToRemove.state
+      || selectedSuburb.value !== suburbToRemove.value,
     );
+
+    setSelectedSuburbs(updatedSuburbs);
+    updateComparisonUrl(updatedSuburbs);
   }
 
   // Fetch market data for all selected suburbs concurrently.
   useEffect(() => {
-    let cancelled = false;
+    const controller = new AbortController();
 
     async function fetchComparisonData() {
       if (selectedSuburbs.length === 0) {
@@ -147,11 +199,11 @@ function Compare() {
       // Start all requests without waiting for each one individually.
       const results = await Promise.allSettled(
         selectedSuburbs.map((selectedSuburb) =>
-          fetchSuburbPerformance(selectedSuburb.value),
+          fetchSuburbPerformance(selectedSuburb.value, controller.signal),
         ),
       );
 
-      if (cancelled) {
+      if (controller.signal.aborted) {
         return;
       }
 
@@ -187,7 +239,7 @@ function Compare() {
     }
 
     fetchComparisonData().catch((fetchError: unknown) => {
-      if (!cancelled) {
+      if (!controller.signal.aborted) {
         setComparisonError(
           fetchError instanceof Error
             ? fetchError.message
@@ -197,9 +249,9 @@ function Compare() {
       }
     });
 
-    // Prevent outdated requests from updating the page.
+    // Cancel outstanding requests when the selection changes or the page unmounts.
     return () => {
-      cancelled = true;
+      controller.abort();
     };
   }, [selectedSuburbs, retryCount]);
 

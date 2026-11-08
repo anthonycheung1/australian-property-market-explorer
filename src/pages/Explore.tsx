@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import './Explore.css';
 import { fetchRentalYield, type RentalYieldData, } from '../api/propertyApi';
 import SearchBar from '../components/SearchBar';
@@ -7,8 +7,10 @@ import { supportedSuburbs } from '../data/suburbs.ts';
 import { StatCardSkeleton } from '../components/Skeleton';
 
 function Explore() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
   // Search state
-  const [suburb, setSuburb] = useState('');
+  const [suburb, setSuburb] = useState(() => searchParams.get('suburb') ?? '');
   const [submittedSuburb, setSubmittedSuburb] = useState('');
   const [invalidSearch, setInvalidSearch] = useState(false);
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -17,6 +19,7 @@ function Explore() {
   const [yieldData, setYieldData] = useState<RentalYieldData | null>(null);
   const [loading, setLoading] = useState(false);
   const [apiError, setApiError] = useState('');
+  const [retryCount, setRetryCount] = useState(0);
 
   // Validate search input
   function isValidSearchBoxInput(input: string) {
@@ -32,75 +35,107 @@ function Explore() {
     return `${(value * 100).toFixed(2)}%`;
   }
 
+  // Fetch rental yield data for the suburb stored in the URL.
+  useEffect(() => {
+    const searchValue = searchParams.get('suburb');
+
+    if (!searchValue) {
+      setSubmittedSuburb('');
+      setYieldData(null);
+      setApiError('');
+      setLoading(false);
+      return;
+    }
+
+    const searchSuburb = supportedSuburbs.find((supportedSuburb) =>
+      supportedSuburb.value.toLowerCase() === searchValue.trim().toLowerCase()
+      || supportedSuburb.label.toLowerCase() === searchValue.trim().toLowerCase(),
+    );
+
+    if (!searchSuburb) {
+      setSubmittedSuburb('');
+      setYieldData(null);
+      setLoading(false);
+      setApiError(`"${searchValue}" is not a supported suburb.`);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    setSuburb(searchSuburb.label);
+    setSubmittedSuburb(searchSuburb.label);
+    setLoading(true);
+    setApiError('');
+    setYieldData(null);
+
+    fetchRentalYield(searchSuburb.value, controller.signal)
+      .then((result) => {
+        if (!controller.signal.aborted) {
+          setYieldData(result);
+        }
+      })
+      .catch((fetchError: unknown) => {
+        if (!controller.signal.aborted) {
+          console.error('Error fetching rental yield:', fetchError);
+
+          setApiError(fetchError instanceof Error ? fetchError.message : 'An unexpected error occurred while retrieving rental yield data.');
+        }
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
+      });
+
+    // Cancel the request if the search changes or the page unmounts.
+    return () => {
+      controller.abort();
+    };
+  }, [searchParams, retryCount]);
+
   // Handle suburb search
-  async function handleSearch() {
+  function handleSearch() {
     // Clear suggestions when the user submits a search
     setSuggestions([]);
 
     if (!isValidSearchBoxInput(suburb)) {
-      setSubmittedSuburb('');
       setInvalidSearch(true);
       setYieldData(null);
       setApiError('');
+
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.delete('suburb');
+      setSearchParams(nextSearchParams, { replace: true });
       return;
     }
 
-    const searchSuburb = supportedSuburbs.find((supportedSuburb) => supportedSuburb.label.trim().toLowerCase() === suburb.trim().toLowerCase());
+    const searchSuburb = supportedSuburbs.find((supportedSuburb) =>
+      supportedSuburb.label.trim().toLowerCase() === suburb.trim().toLowerCase()
+      || supportedSuburb.value.trim().toLowerCase() === suburb.trim().toLowerCase(),
+    );
 
-    // Check whether a matching suburb was found before starting the API request.
+    // Check whether a matching suburb was found before updating the URL.
     if (searchSuburb) {
       setInvalidSearch(false);
-      setSubmittedSuburb(searchSuburb.label);
-      setLoading(true);
-      setApiError('');
-      setYieldData(null);
-
-      try {
-        const result = await fetchRentalYield(searchSuburb.value);
-        setYieldData(result);
-      } catch (error) {
-        console.error('Error fetching rental yield:', error);
-
-        setApiError(error instanceof Error ? error.message : 'An unexpected error occurred while retrieving rental yield data.');
-      } finally {
-        setLoading(false);
-      }
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.set('suburb', searchSuburb.value);
+      setSearchParams(nextSearchParams);
     } else {
       setInvalidSearch(false);
       setSubmittedSuburb('');
       setLoading(false);
       setApiError(`"${suburb.trim()}" is not a supported suburb.`);
       setYieldData(null);
+
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.delete('suburb');
+      setSearchParams(nextSearchParams, { replace: true });
     }
   }
 
   // Retry fetching rental yield data for the submitted suburb.
   function handleRetry() {
-    const searchSuburb = supportedSuburbs.find((supportedSuburb) => supportedSuburb.label === submittedSuburb);
-
-    if (searchSuburb) {
-      setSuburb(searchSuburb.label);
-
-      // Retry the previous search.
-      setSuggestions([]);
-
-      setInvalidSearch(false);
-      setLoading(true);
-      setApiError('');
-      setYieldData(null);
-
-      fetchRentalYield(searchSuburb.value).then((result) => {
-        setYieldData(result);
-      })
-        .catch((error: unknown) => {
-          console.error('Error fetching rental yield:', error);
-
-          setApiError(error instanceof Error ? error.message : 'An unexpected error occurred while retrieving rental yield data.');
-        })
-        .finally(() => {
-          setLoading(false);
-        });
-    }
+    setRetryCount((currentCount) => currentCount + 1);
   }
 
   // Handle changes to the search input
@@ -113,6 +148,13 @@ function Explore() {
 
     // Clear existing error messages
     setApiError('');
+
+    // Remove the previous search from the URL when the user edits the input.
+    if (searchParams.has('suburb')) {
+      const nextSearchParams = new URLSearchParams(searchParams);
+      nextSearchParams.delete('suburb');
+      setSearchParams(nextSearchParams, { replace: true });
+    }
 
     // Find suburbs whose labels contain the user's input
     const suggestedSuburbs = value.trim().length === 0 ? [] : supportedSuburbs.filter((supportedSuburb) => {
