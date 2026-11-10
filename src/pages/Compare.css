@@ -1,47 +1,50 @@
 .compare-page {
-  max-width: 1200px;
+  width: 100%;
+  max-width: var(--content-width);
+  min-width: 0;
   margin: 0 auto;
-  padding: 32px 24px;
+  padding: 36px 32px 48px;
 }
 
 .compare-heading {
-  margin-bottom: 32px;
+  margin-bottom: 30px;
 }
 
 .compare-eyebrow {
-  margin-bottom: 8px;
-  color: var(--focus-color);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 1px;
+  margin: 0 0 8px;
+  color: var(--link-color);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: 1.1px;
+  text-transform: uppercase;
 }
 
 .compare-heading h1 {
-  margin: 0 0 12px;
-  font-size: 32px;
+  margin: 0 0 10px;
+  font-size: 34px;
 }
 
-.compare-heading>p:last-child {
-  margin: 0;
+.compare-heading > p:last-child {
   color: var(--text-secondary);
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
 .compare-section {
-  margin-bottom: 32px;
+  margin-bottom: 28px;
   padding: 24px;
   border: 1px solid var(--border-color);
-  border-radius: 12px;
-  background-color: var(--surface-background);
+  border-radius: var(--radius-large);
+  background: var(--surface-background);
+  box-shadow: var(--shadow);
 }
 
 .compare-section h2 {
-  margin: 0 0 12px;
-  font-size: 22px;
+  margin: 0 0 10px;
+  font-size: 21px;
 }
 
 .compare-description {
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   color: var(--text-secondary);
   line-height: 1.6;
 }
@@ -49,26 +52,27 @@
 .compare-error {
   margin: 12px 0 0;
   color: var(--error-strong);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .compare-count {
   margin: 16px 0 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .compare-empty {
   margin: 0;
-  padding: 24px;
+  padding: 22px;
   border: 1px dashed var(--border-strong);
-  border-radius: 8px;
+  border-radius: var(--radius-medium);
   color: var(--text-secondary);
   line-height: 1.6;
   text-align: center;
 }
 
-.selected-suburbs {
+.selected-suburbs,
+.comparison-results {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 16px;
@@ -78,100 +82,68 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 20px;
+  gap: 18px;
   min-width: 0;
-  padding: 20px;
+  padding: 18px;
   border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background-color: var(--surface-subtle);
+  border-radius: var(--radius-medium);
+  background: var(--surface-subtle);
 }
 
-.selected-suburb-details h3 {
+.selected-suburb-details h3,
+.comparison-result-card h3 {
   margin: 0 0 8px;
   overflow-wrap: anywhere;
   font-size: 18px;
 }
 
 .selected-suburb-details p {
-  margin: 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
 }
 
-.remove-suburb-button {
+.remove-suburb-button,
+.retry-button {
   align-self: flex-start;
-  padding: 8px 14px;
+  padding: 8px 13px;
   border: 1px solid var(--error-strong);
-  border-radius: 6px;
-  background-color: var(--surface-background);
+  border-radius: var(--radius-small);
+  background: var(--surface-background);
   color: var(--error-strong);
-  font-size: 14px;
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .remove-suburb-button:hover {
-  background-color: var(--error-background);
-}
-
-.remove-suburb-button:focus-visible {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 3px;
+  background: var(--error-background);
 }
 
 .compare-limit-message {
-  margin: 20px 0 0;
+  margin: 18px 0 0;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
   line-height: 1.6;
-}
-
-@media (max-width: 768px) {
-  .compare-page {
-    padding: 24px 16px;
-  }
-
-  .compare-heading h1 {
-    font-size: 28px;
-  }
-
-  .compare-section {
-    padding: 20px;
-  }
-
-  .selected-suburbs {
-    grid-template-columns: 1fr;
-  }
-}
-
-.comparison-results {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
 }
 
 .comparison-result-card {
   min-width: 0;
   padding: 20px;
   border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background-color: var(--surface-background);
-}
-
-.comparison-result-card h3 {
-  margin: 0 0 8px;
-  font-size: 20px;
+  border-radius: var(--radius-medium);
+  background: var(--surface-background);
 }
 
 .comparison-state {
-  margin: 0 0 16px;
+  margin: 0 0 14px;
   color: var(--text-secondary);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .comparison-data-date {
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
 }
 
 .comparison-metrics {
@@ -182,9 +154,10 @@
 
 .compare-loading {
   padding: 16px;
-  border-radius: 8px;
-  background-color: var(--surface-muted);
-  color: var(--text-tertiary);
+  border-radius: var(--radius-small);
+  background: var(--surface-muted);
+  color: var(--text-secondary);
+  font-size: 14px;
   line-height: 1.6;
 }
 
@@ -192,8 +165,8 @@
 .comparison-result-error {
   padding: 16px;
   border: 1px solid var(--error-border);
-  border-radius: 8px;
-  background-color: var(--error-background);
+  border-radius: var(--radius-medium);
+  background: var(--error-background);
   color: var(--error-text);
   line-height: 1.6;
 }
@@ -203,50 +176,21 @@
   overflow-wrap: anywhere;
 }
 
-.retry-button {
-  padding: 9px 16px;
-  border: 1px solid var(--error-strong);
-  border-radius: 6px;
-  background-color: var(--surface-background);
-  color: var(--error-text);
-  font-size: 14px;
-  cursor: pointer;
-}
-
-.retry-button:hover {
-  background-color: var(--error-hover);
-}
-
-.retry-button:focus-visible {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 3px;
+.compare-error-panel .retry-button {
+  margin-top: 12px;
 }
 
 .compare-disclaimer {
-  margin: 24px 0 0;
+  margin: 22px 0 0;
   color: var(--text-secondary);
-  font-size: 13px;
+  font-size: 12px;
   line-height: 1.6;
 }
-
-@media (max-width: 900px) {
-  .comparison-results {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-@media (max-width: 600px) {
-  .comparison-results {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Loading state for market comparison */
 
 .comparison-loading {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 22px;
   min-width: 0;
 }
 
@@ -255,15 +199,9 @@
   min-width: 0;
 }
 
-.compare-loading {
-  color: var(--text-secondary);
-  font-size: 14px;
-}
-
-/* Individual suburb errors */
 .comparison-error-list {
   margin: 12px 0;
-  padding-left: 24px;
+  padding-left: 22px;
 }
 
 .comparison-error-list li {
@@ -271,12 +209,46 @@
   line-height: 1.5;
 }
 
-/* Visible keyboard focus for comparison page controls */
-
 .compare-page button:focus-visible,
 .compare-page a:focus-visible,
 .compare-page input:focus-visible,
 .compare-page select:focus-visible {
   outline: 3px solid var(--focus-color);
   outline-offset: 2px;
+}
+
+@media (max-width: 900px) {
+  .selected-suburbs,
+  .comparison-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .compare-page {
+    padding: 28px 22px 40px;
+  }
+
+  .compare-heading h1 {
+    font-size: 30px;
+  }
+
+  .compare-section {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 600px) {
+  .compare-page {
+    padding: 24px 16px 36px;
+  }
+
+  .selected-suburbs,
+  .comparison-results {
+    grid-template-columns: 1fr;
+  }
+
+  .compare-section {
+    padding: 17px;
+  }
 }

@@ -1,164 +1,168 @@
 .explore-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px;
-}
-
-/* Suburb search area */
-.search-section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  max-width: 500px;
-  margin-top: 24px;
-}
-
-/* Search label */
-.search-section label {
-  font-size: 16px;
-  font-weight: 600;
-}
-
-/* Search input */
-.search-box {
   width: 100%;
-  box-sizing: border-box;
-  padding: 12px;
-  border: 1px solid var(--input-border);
-  border-radius: 6px;
+  max-width: var(--content-width);
+  min-width: 0;
+  margin: 0 auto;
+  padding: 36px 32px 48px;
+}
+
+.page-intro {
+  max-width: 760px;
+  margin: 0 0 28px;
+}
+
+.page-intro h1 {
+  margin: 0 0 10px;
+}
+
+.page-intro p {
+  color: var(--text-secondary);
   font-size: 16px;
-  background-color: var(--input-background);
-  color: var(--input-text);
+  line-height: 1.65;
 }
 
-/* Visible focus indicator for keyboard users */
-.search-box:focus {
-  outline: 2px solid var(--focus-color);
-  outline-offset: 2px;
-  border-color: var(--focus-color);
+.search-results-heading {
+  margin: 28px 0 16px;
+  font-size: 21px;
 }
 
-/* Container for the metric cards */
+.explore-page [role="status"] {
+  margin: 16px 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
 .metric-cards {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 32px;
+  gap: 20px;
+  margin-top: 28px;
 }
 
-/* Individual metric card */
 .metric-card {
-  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 14px;
+  min-width: 0;
+  min-height: 142px;
+  padding: 24px;
   border: 1px solid var(--border-color);
-  border-radius: 10px;
-  background-color: var(--input-background);
+  border-radius: var(--radius-medium);
+  background: var(--surface-background);
   box-shadow: var(--shadow);
 }
 
-/* Metric heading */
 .metric-card h2 {
   margin: 0;
-  font-size: 18px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 650;
+  letter-spacing: 0;
+}
+
+.metric-card p {
   color: var(--text-primary);
+  font-size: 32px;
+  font-weight: 750;
+  line-height: 1.2;
+  letter-spacing: -0.7px;
+  overflow-wrap: anywhere;
 }
 
-/* Stack cards on narrower screens */
-@media (max-width: 600px) {
-  .metric-cards {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* Proof-of-concept suburb availability panel */
-.availability-note {
-  margin-top: 8px;
-  padding: 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  background-color: var(--surface-muted);
-}
-
-/* Panel heading */
-.availability-heading {
-  margin: 0 0 8px;
-  color: var(--text-muted);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-/* Available suburbs */
-.availability-list {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px 12px;
-  margin: 0;
-  padding-left: 18px;
-  color: var(--text-tertiary);
-  font-size: 12px;
-}
-
-/* State and territory abbreviations */
-.availability-list span {
-  color: var(--text-muted);
-  font-size: 11px;
-}
-
-/* Use two columns on smaller screens */
-@media (max-width: 600px) {
-  .availability-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
-/* Loading state for rental yield results */
 .metric-cards[aria-busy="true"] {
   align-items: stretch;
 }
 
 .metric-cards[aria-busy="true"] .metric-card {
-  min-height: 130px;
+  min-height: 142px;
 }
 
-/* Error and empty states */
 .explore-error-panel,
 .explore-empty-state {
-  padding: 16px;
   margin: 20px 0;
-  border-radius: 8px;
+  padding: 16px 18px;
+  border-radius: var(--radius-medium);
+  font-size: 14px;
+  line-height: 1.6;
 }
 
 .explore-error-panel {
-  border: 1px solid var(--error-strong);
-  background-color: var(--error-background);
+  border: 1px solid var(--error-border);
+  background: var(--error-background);
   color: var(--error-text);
 }
 
 .explore-empty-state {
   border: 1px solid var(--border-color);
-  background-color: var(--surface-subtle);
-  color: var(--text-tertiary);
-}
-
-.explore-error-panel p,
-.explore-empty-state {
-  line-height: 1.6;
+  background: var(--surface-subtle);
+  color: var(--text-secondary);
 }
 
 .explore-error-panel .retry-button {
-  margin-top: 8px;
+  margin-top: 12px;
 }
 
-/* Visible keyboard focus for search controls */
-
-.search-section input:focus-visible,
-.search-section button:focus-visible {
-  outline: 3px solid var(--focus-color);
-  outline-offset: 2px;
+.suburb-details-link {
+  margin-top: 22px;
+  font-size: 14px;
+  font-weight: 650;
 }
 
-/* Highlight the currently active autocomplete suggestion */
+.suburb-details-link a {
+  text-decoration-thickness: 1px;
+}
 
-.suggestion-option.active {
-  outline: 2px solid var(--focus-color);
-  outline-offset: -2px;
+.data-source {
+  margin-top: 20px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 768px) {
+  .explore-page {
+    padding: 28px 22px 40px;
+  }
+
+  .metric-card {
+    padding: 20px;
+  }
+
+  .metric-card p {
+    font-size: 29px;
+  }
+}
+
+@media (max-width: 600px) {
+  .explore-page {
+    padding: 24px 16px 36px;
+  }
+
+  .page-intro {
+    margin-bottom: 22px;
+  }
+
+  .page-intro p {
+    font-size: 14px;
+  }
+
+  .search-results-heading {
+    font-size: 19px;
+  }
+
+  .metric-cards {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-top: 22px;
+  }
+
+  .metric-card {
+    min-height: 120px;
+    padding: 18px;
+  }
+
+  .metric-card p {
+    font-size: 27px;
+  }
 }
